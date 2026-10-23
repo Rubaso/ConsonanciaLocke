@@ -166,44 +166,42 @@ export default function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-violet-300/15 bg-[#090d1b]/85 shadow-lg shadow-violet-950/20 backdrop-blur-xl">
-      <div className="mx-auto grid w-full max-w-[1600px] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 sm:gap-4 sm:px-6 lg:px-8">
+      <div className="mx-auto grid w-full max-w-[1600px] grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-3 px-4 py-3 sm:gap-4 sm:px-6 lg:px-8">
         <Link
           href="/"
           className="bg-gradient-to-r from-teal-300 via-cyan-300 to-violet-400 bg-clip-text text-lg font-black tracking-tight text-transparent"
         >
           EKLOCKE
         </Link>
-        <div className="flex min-w-0 items-center justify-center gap-2">
-          <nav
-            aria-label="Navegación principal"
-            className="overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-          >
-            <div className="mx-auto flex w-max gap-1 rounded-xl border border-white/10 bg-slate-900/75 p-1 shadow-inner shadow-white/5">
-              {navigation.map((item) => {
-                const active =
-                  hasMounted &&
-                  (pathname === item.href ||
-                    (item.href !== "/" && pathname.startsWith(`${item.href}/`)));
+        <TwitchLiveIndicator />
+        <nav
+          aria-label="Navegación principal"
+          className="overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
+          <div className="mx-auto flex w-max gap-1 rounded-xl border border-white/10 bg-slate-900/75 p-1 shadow-inner shadow-white/5">
+            {navigation.map((item) => {
+              const active =
+                hasMounted &&
+                (pathname === item.href ||
+                  (item.href !== "/" && pathname.startsWith(`${item.href}/`)));
 
-                return (
-                  <Link
-                    key={item.label}
-                    href={item.href}
-                    className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-semibold ${
-                      active
-                        ? "bg-gradient-to-r from-teal-300 via-cyan-300 to-violet-400 text-slate-950 shadow-md shadow-cyan-500/20"
-                        : "text-slate-300 hover:bg-white/10 hover:text-white"
-                    }`}
-                    aria-current={active ? "page" : undefined}
-                  >
-                    {item.label}
-                  </Link>
-                );
-              })}
-            </div>
-          </nav>
-          <TwitchLiveIndicator />
-        </div>
+              return (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-semibold ${
+                    active
+                      ? "bg-gradient-to-r from-teal-300 via-cyan-300 to-violet-400 text-slate-950 shadow-md shadow-cyan-500/20"
+                      : "text-slate-300 hover:bg-white/10 hover:text-white"
+                  }`}
+                  aria-current={active ? "page" : undefined}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
+          </div>
+        </nav>
         <HeaderSession />
       </div>
     </header>
