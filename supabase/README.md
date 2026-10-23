@@ -30,6 +30,7 @@ Apply these files in order to the **new Consonancia project**:
 21. `20261023042000_clear_archived_pokepaste_profiles.sql`
 22. `20261023043000_name_individual_rounds.sql`
 23. `20261023044000_change_individual_match_winner.sql`
+24. `20261023230000_twitch_live_status_cache.sql`
 
 The initial migration creates 13 tables for player accounts and sessions,
 login throttling, the save-derived route catalog, Pokémon and moves, five
@@ -110,6 +111,9 @@ competition history.
 The twenty-third migration lets organizers correct the winner of an individual
 match after recording a result. It restricts changes to active, non-archived
 matches and verifies that the selected winner is one of the participants.
+The twenty-fourth migration creates the private server-side cache of Twitch
+live status. The scheduled refresh writes to this table; browser requests only
+read the cached live channels.
 
 ## Security
 
@@ -165,7 +169,7 @@ If using the dashboard instead of the CLI:
    `medals` 5. No player rows should exist yet.
 
 If an existing database has applied the first *n* migrations, apply migrations
-*n+1* through 23 in order. The route catalog migration (4) must precede
+*n+1* through 24 in order. The route catalog migration (4) must precede
 migration 5 on databases that have not applied it yet. Migration 3 adds a
 nullable `pin` column and removes the old `pin_hash`; existing player records
 remain, but you must assign them PINs before those players can log in. Their
@@ -191,6 +195,27 @@ Because the migration intentionally grants no direct read access to
 `anon`/`authenticated`, all public data access must remain on the server and
 select only fields intended for display. Do not create a browser Supabase
 client with the service key.
+
+## Twitch live status
+
+Players can link their Twitch channel from **Ajustes**. To show live status in
+the header and player cards, create an application in the Twitch Developer
+Console and set `TWITCH_CLIENT_ID` and `TWITCH_CLIENT_SECRET` in the server
+environment (for local development, `.env.local`). These credentials are used
+only server-side to request a Twitch app access token and query the Helix
+Streams API; never expose them with a `NEXT_PUBLIC_` prefix.
+
+Configure the scheduled job to send a `GET` request to
+`https://<your-consonancia-domain>/api/check-live` with
+`Authorization: Bearer <CRON_SECRET>`. Set `CRON_SECRET` in Consonancia's server
+environment to the same value as the scheduled job's bearer secret. The
+`TWITCH_CRON_SECRET` variable is also accepted as a compatibility alias.
+Each run checks all linked player channels together and stores their live/offline
+status in Supabase. The endpoint requires the bearer secret to refresh Twitch
+data; without it, `GET /api/check-live` only returns the public cached list of
+live channels. Cached entries older than five minutes are not shown. The header
+refreshes its display approximately once per minute, and the player list sorts
+live players first, then alphabetically.
 
 ## Creating administrator accounts manually
 

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import PlayerSettingsDialog from "@/components/PlayerSettingsDialog";
+import TwitchLiveIndicator from "@/components/TwitchLiveIndicator";
 import {
   PLAYER_SESSION_EVENT,
   notifyPlayerSessionChanged,
@@ -172,34 +173,37 @@ export default function SiteHeader() {
         >
           EKLOCKE
         </Link>
-        <nav
-          aria-label="Navegación principal"
-          className="overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-        >
-          <div className="mx-auto flex w-max gap-1 rounded-xl border border-white/10 bg-slate-900/75 p-1 shadow-inner shadow-white/5">
-            {navigation.map((item) => {
-              const active =
-                hasMounted &&
-                (pathname === item.href ||
-                  (item.href !== "/" && pathname.startsWith(`${item.href}/`)));
+        <div className="flex min-w-0 items-center justify-center gap-2">
+          <nav
+            aria-label="Navegación principal"
+            className="overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          >
+            <div className="mx-auto flex w-max gap-1 rounded-xl border border-white/10 bg-slate-900/75 p-1 shadow-inner shadow-white/5">
+              {navigation.map((item) => {
+                const active =
+                  hasMounted &&
+                  (pathname === item.href ||
+                    (item.href !== "/" && pathname.startsWith(`${item.href}/`)));
 
-              return (
-                <Link
-                  key={item.label}
-                  href={item.href}
-                  className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-semibold ${
-                    active
-                      ? "bg-gradient-to-r from-teal-300 via-cyan-300 to-violet-400 text-slate-950 shadow-md shadow-cyan-500/20"
-                      : "text-slate-300 hover:bg-white/10 hover:text-white"
-                  }`}
-                  aria-current={active ? "page" : undefined}
-                >
-                  {item.label}
-                </Link>
-              );
-            })}
-          </div>
-        </nav>
+                return (
+                  <Link
+                    key={item.label}
+                    href={item.href}
+                    className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-semibold ${
+                      active
+                        ? "bg-gradient-to-r from-teal-300 via-cyan-300 to-violet-400 text-slate-950 shadow-md shadow-cyan-500/20"
+                        : "text-slate-300 hover:bg-white/10 hover:text-white"
+                    }`}
+                    aria-current={active ? "page" : undefined}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </div>
+          </nav>
+          <TwitchLiveIndicator />
+        </div>
         <HeaderSession />
       </div>
     </header>

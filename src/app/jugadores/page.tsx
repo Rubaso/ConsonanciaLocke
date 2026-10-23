@@ -73,9 +73,17 @@ function PlayerCard({
               <p className="truncate text-xs text-zinc-500">@{player.username}</p>
             </div>
           </div>
-          <span className="text-xs font-semibold text-cyan-300 opacity-0 transition group-hover:opacity-100">
-            Ver caja →
-          </span>
+          <div className="flex items-center gap-3">
+            {player.isLive && (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-rose-400/30 bg-rose-950/35 px-2 py-1 text-[10px] font-black uppercase tracking-wide text-rose-200">
+                <span aria-hidden="true" className="h-1.5 w-1.5 animate-pulse rounded-full bg-rose-400" />
+                En directo
+              </span>
+            )}
+            <span className="hidden text-xs font-semibold text-cyan-300 opacity-0 transition group-hover:opacity-100 sm:inline">
+              Ver caja →
+            </span>
+          </div>
         </header>
 
         <div className="grid gap-5 p-4 md:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
@@ -198,15 +206,16 @@ async function PlayersContent() {
       ? getCurrentPlayer()
       : Promise.resolve(null),
   ]);
-  const players =
-    data.status === "ready" && currentPlayer
-      ? [
-          ...data.players.filter((player) => player.id === currentPlayer.id),
-          ...data.players.filter((player) => player.id !== currentPlayer.id),
-        ]
-      : data.status === "ready"
-        ? data.players
-        : [];
+  const players = data.status === "ready"
+    ? [...data.players].sort((left, right) => {
+        if (left.isLive !== right.isLive) return left.isLive ? -1 : 1;
+        return (left.gameTrainerName || left.displayName).localeCompare(
+          right.gameTrainerName || right.displayName,
+          "es",
+          { sensitivity: "base" },
+        );
+      })
+    : [];
 
   return (
     <div className="space-y-6">
@@ -221,6 +230,16 @@ async function PlayersContent() {
           <p className="text-sm text-zinc-400">
             Equipos, Pokémon y medallas de la partida.
           </p>
+          {data.status === "ready" && data.twitchStatus === "not-configured" && (
+            <p className="text-xs text-zinc-500">
+              El estado de Twitch aparecerá cuando se configuren las credenciales de la integración.
+            </p>
+          )}
+          {data.status === "ready" && data.twitchStatus === "error" && (
+            <p className="text-xs text-amber-200" role="status">
+              No se pudo comprobar en este momento quién está en directo en Twitch.
+            </p>
+          )}
         </div>
       </section>
 

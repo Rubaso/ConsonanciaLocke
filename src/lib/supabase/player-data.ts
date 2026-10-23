@@ -4,12 +4,18 @@ import {
   createSupabaseAdminClient,
   getSupabaseConfiguration,
 } from "@/lib/supabase/admin";
+import {
+  getLiveTwitchPlayerIds,
+  isTwitchConfigured,
+} from "@/lib/twitch/live-status";
 
 export type PlayerCardData = {
   id: string;
   username: string;
   displayName: string;
   gameTrainerName: string | null;
+  twitchUsername: string | null;
+  isLive: boolean;
   color: string;
   medals: Array<{ id: number; name: string; earned: boolean }>;
   team: Array<{
@@ -47,7 +53,11 @@ export type PlayerBoxData = {
 };
 
 type PlayersPageData =
-  | { status: "ready"; players: PlayerCardData[] }
+  | {
+      status: "ready";
+      players: PlayerCardData[];
+      twitchStatus: "ready" | "not-configured" | "error";
+    }
   | { status: "not-configured"; missingVariables: string[] }
   | { status: "error" };
 
@@ -73,6 +83,7 @@ function parsePlayers(value: unknown) {
       typeof item.username !== "string" ||
       typeof item.display_name !== "string" ||
       !(typeof item.game_trainer_name === "string" || item.game_trainer_name === null) ||
+      !(typeof item.twitch_username === "string" || item.twitch_username === null) ||
       typeof item.color !== "string" ||
       !/^#[0-9A-Fa-f]{6}$/.test(item.color)
     ) {
@@ -84,6 +95,7 @@ function parsePlayers(value: unknown) {
       username: item.username,
       displayName: item.display_name,
       gameTrainerName: item.game_trainer_name,
+      twitchUsername: item.twitch_username,
       color: item.color,
     };
   });
@@ -242,7 +254,7 @@ export async function getPlayersPageData(): Promise<PlayersPageData> {
   const supabase = createSupabaseAdminClient();
   const playersResponse = await supabase
     .from("players")
-    .select("id,username,display_name,game_trainer_name,color")
+    .select("id,username,display_name,game_trainer_name,twitch_username,color")
     .eq("is_active", true)
     .order("display_name", { ascending: true })
     .limit(40);
@@ -254,7 +266,22 @@ export async function getPlayersPageData(): Promise<PlayersPageData> {
 
   try {
     const players = parsePlayers(playersResponse.data);
-    if (players.length === 0) return { status: "ready", players: [] };
+    let twitchStatus: "ready" | "not-configured" | "error" =
+      isTwitchConfigured() ? "ready" : "not-configured";
+    let livePlayerIds = new Set<string>();
+    try {
+      const lookup = await getLiveTwitchPlayerIds(players);
+      livePlayerIds = lookup.playerIds;
+    } catch (error) {
+      if (twitchStatus === "ready") twitchStatus = "error";
+      console.error(
+        "Failed to check Twitch live status for player cards:",
+        error instanceof Error ? error.message : error,
+      );
+    }
+    if (players.length === 0) {
+      return { status: "ready", players: [], twitchStatus };
+    }
 
     const playerIds = players.map((player) => player.id);
     const [medalsResponse, playerMedalsResponse, teamResponse] =
@@ -309,8 +336,10 @@ export async function getPlayersPageData(): Promise<PlayersPageData> {
 
     return {
       status: "ready",
+      twitchStatus,
       players: players.map((player) => ({
         ...player,
+        isLive: livePlayerIds.has(player.id),
         medals: medals.map((medal) => ({
           ...medal,
           earned: earnedMedals.has(`${player.id}:${medal.id}`),
