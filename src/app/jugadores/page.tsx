@@ -208,6 +208,11 @@ async function PlayersContent() {
   ]);
   const players = data.status === "ready"
     ? [...data.players].sort((left, right) => {
+        const leftIsCurrentPlayer = left.id === currentPlayer?.id;
+        const rightIsCurrentPlayer = right.id === currentPlayer?.id;
+        if (leftIsCurrentPlayer !== rightIsCurrentPlayer) {
+          return leftIsCurrentPlayer ? -1 : 1;
+        }
         if (left.isLive !== right.isLive) return left.isLive ? -1 : 1;
         return (left.gameTrainerName || left.displayName).localeCompare(
           right.gameTrainerName || right.displayName,
