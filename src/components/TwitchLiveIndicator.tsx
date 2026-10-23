@@ -86,21 +86,31 @@ export default function TwitchLiveIndicator() {
           ? "LIVE: no se pudo comprobar el estado"
           : `LIVE: ${livePlayers.length} canales en directo`
       }
-      className="flex min-w-0 items-center gap-1.5 whitespace-nowrap text-[10px] sm:gap-2 sm:text-xs"
+      className="flex min-w-0 items-center gap-2 whitespace-nowrap rounded-full border border-rose-400/20 bg-rose-950/25 px-2.5 py-1.5 text-[10px] shadow-inner shadow-rose-950/20 sm:gap-2.5 sm:px-3 sm:text-xs"
       role="group"
     >
-      <span className="shrink-0 font-bold uppercase tracking-wide text-zinc-500">
-        LIVE:
+      <span className="relative flex h-2.5 w-2.5 shrink-0">
+        <span
+          aria-hidden="true"
+          className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-500 opacity-50"
+        />
+        <span
+          aria-hidden="true"
+          className="relative inline-flex h-2.5 w-2.5 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.8)]"
+        />
       </span>
-      <div className="flex min-w-0 items-center gap-1.5 overflow-hidden">
+      <span className="shrink-0 font-black uppercase tracking-wide text-rose-200">
+        LIVE
+      </span>
+      <div className="flex min-w-0 items-center gap-1.5 overflow-hidden border-l border-rose-300/20 pl-2">
         {liveStatus.status === "ready" && livePlayers.length === 0 ? (
-          <span className="text-[10px] font-semibold text-zinc-500 sm:text-xs">
+          <span className="text-[10px] font-medium text-rose-100/65 sm:text-xs">
             No hay nadie
           </span>
         ) : (
           livePlayers.map((player) => (
             <Link
-              className="max-w-16 truncate text-[10px] font-semibold text-zinc-500 hover:text-cyan-200 hover:underline sm:max-w-24 sm:text-xs"
+              className="max-w-16 truncate text-[10px] font-bold text-rose-100 transition hover:text-white hover:underline sm:max-w-24 sm:text-xs"
               href={player.url}
               key={player.twitchUsername}
               rel="noreferrer"
