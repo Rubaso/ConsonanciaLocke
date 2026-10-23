@@ -1,0 +1,285 @@
+import Link from "next/link";
+import { connection } from "next/server";
+import PokemonSprite from "@/components/PokemonSprite";
+import { getCurrentPlayer } from "@/lib/auth";
+import { getSupabaseConfiguration } from "@/lib/supabase/admin";
+import type { PlayerCardData } from "@/lib/supabase/player-data";
+import { getPlayersPageData } from "@/lib/supabase/player-data";
+
+export const metadata = {
+  title: "Jugadores | EKLOCKE",
+  description: "Jugadores, equipos y medallas de Pokémon Consonancia.",
+};
+
+const teamPositions = Array.from({ length: 6 }, (_, index) => index + 1);
+
+function brightenColor(color: string) {
+  const channels = color.slice(1).match(/.{2}/g);
+  if (!channels) return color;
+  return `#${channels
+    .map((channel) =>
+    Math.round(parseInt(channel, 16) * 0.68 + 255 * 0.32)
+        .toString(16)
+        .padStart(2, "0"),
+    )
+    .join("")}`;
+}
+
+function PlayerCard({
+  player,
+  isCurrentPlayer,
+}: {
+  player: PlayerCardData;
+  isCurrentPlayer: boolean;
+}) {
+  const pokemonByPosition = new Map(
+    player.team.map((pokemon) => [pokemon.position, pokemon]),
+  );
+  const accentColor = isCurrentPlayer
+    ? brightenColor(player.color)
+    : player.color;
+
+  return (
+    <Link
+      href={`/jugadores/${player.id}`}
+      className="group block rounded-xl transition hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan-300"
+    >
+      <article
+        className={`h-full overflow-hidden rounded-xl border border-zinc-800 border-l-4 transition group-hover:border-cyan-300/30 ${
+          isCurrentPlayer
+            ? "border-cyan-300/30 bg-cyan-950/30 shadow-lg shadow-cyan-950/40"
+            : "bg-slate-950/75"
+        }`}
+        style={{ borderLeftColor: accentColor }}
+      >
+        <header className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-800 px-4 py-3">
+          <div className="flex min-w-0 items-center gap-3">
+            <span
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border bg-zinc-800 text-sm font-black text-white"
+              style={{ borderColor: accentColor }}
+              aria-hidden="true"
+            >
+              {(player.gameTrainerName || player.displayName)
+                .slice(0, 1)
+                .toUpperCase()}
+            </span>
+            <div className="min-w-0">
+              <h3
+                className="truncate font-semibold"
+                style={{ color: player.color }}
+              >
+                {player.gameTrainerName || player.displayName}
+              </h3>
+              <p className="truncate text-xs text-zinc-500">@{player.username}</p>
+            </div>
+          </div>
+          <span className="text-xs font-semibold text-cyan-300 opacity-0 transition group-hover:opacity-100">
+            Ver caja →
+          </span>
+        </header>
+
+        <div className="grid gap-5 p-4 md:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
+          <section aria-label={`Medallas de ${player.gameTrainerName || player.displayName}`}>
+            <div className="mb-3 flex items-center justify-between">
+              <h4 className="text-xs font-bold uppercase tracking-wide text-zinc-400">
+                Medallas
+              </h4>
+              <span className="text-xs text-zinc-500">
+                {player.medals.filter((medal) => medal.earned).length} /{" "}
+                {player.medals.length}
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {player.medals.map((medal) => (
+                <span
+                  key={medal.id}
+                  title={medal.name}
+                  aria-label={`${medal.name}: ${medal.earned ? "obtenida" : "pendiente"}`}
+                  className={`flex h-10 w-10 items-center justify-center rounded-full border ${
+                    medal.earned
+                      ? "border-amber-300/40 bg-amber-400/15 text-amber-200"
+                      : "border-zinc-700 bg-zinc-950 text-zinc-700 grayscale"
+                  }`}
+                >
+                  <svg
+                    aria-hidden="true"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    className="h-5 w-5"
+                  >
+                    <path
+                      d="M12 2.75 14.6 8l5.8.85-4.2 4.1 1 5.8-5.2-2.75-5.2 2.75 1-5.8-4.2-4.1L9.4 8 12 2.75Z"
+                      stroke="currentColor"
+                      strokeLinejoin="round"
+                      strokeWidth="1.4"
+                    />
+                  </svg>
+                </span>
+              ))}
+            </div>
+          </section>
+
+          <section aria-label={`Equipo de ${player.gameTrainerName || player.displayName}`}>
+            <div className="mb-3 flex items-center justify-between">
+              <h4 className="text-xs font-bold uppercase tracking-wide text-zinc-400">
+                Equipo
+              </h4>
+              <span className="text-xs text-zinc-500">
+                {player.team.length} / 6
+              </span>
+            </div>
+            <ol className="grid grid-cols-3 gap-2">
+              {teamPositions.map((position) => {
+                const pokemon = pokemonByPosition.get(position);
+
+                return (
+                  <li
+                    className={`flex aspect-square min-w-0 flex-col items-center justify-center gap-0 rounded-lg border p-0 text-center ${
+                      pokemon
+                        ? "border-teal-500/20 bg-teal-950/30"
+                        : "border-dashed border-zinc-800 bg-zinc-950/60"
+                    }`}
+                    key={position}
+                    aria-label={
+                      pokemon
+                        ? `Posición ${position}: ${pokemon.nickname || pokemon.species}`
+                        : `Posición ${position} vacía`
+                    }
+                    title={
+                      pokemon
+                        ? pokemon.species
+                        : undefined
+                    }
+                  >
+                    {pokemon ? (
+                      <>
+                        <PokemonSprite
+                          species={pokemon.species}
+                          form={pokemon.form}
+                          isShiny={pokemon.isShiny}
+                          size={112}
+                          framed={false}
+                        />
+                        <span className="max-w-full truncate text-[10px] font-semibold text-zinc-200">
+                          {pokemon.nickname || pokemon.species}
+                        </span>
+                        {pokemon.nickname && (
+                          <span className="max-w-full truncate text-[9px] text-zinc-500">
+                            {pokemon.species}
+                          </span>
+                        )}
+                        {pokemon.isShiny && (
+                          <span className="text-[9px] text-amber-300" aria-label="Shiny">
+                            ✦
+                          </span>
+                        )}
+                      </>
+                    ) : (
+                      <span className="text-[9px] font-medium text-zinc-700">
+                        {position}
+                      </span>
+                    )}
+                  </li>
+                );
+              })}
+            </ol>
+          </section>
+        </div>
+      </article>
+    </Link>
+  );
+}
+
+async function PlayersContent() {
+  await connection();
+  const [data, currentPlayer] = await Promise.all([
+    getPlayersPageData(),
+    getSupabaseConfiguration().status === "configured"
+      ? getCurrentPlayer()
+      : Promise.resolve(null),
+  ]);
+  const players =
+    data.status === "ready" && currentPlayer
+      ? [
+          ...data.players.filter((player) => player.id === currentPlayer.id),
+          ...data.players.filter((player) => player.id !== currentPlayer.id),
+        ]
+      : data.status === "ready"
+        ? data.players
+        : [];
+
+  return (
+    <div className="space-y-6">
+      <section>
+        <div className="space-y-1">
+          <p className="text-xs font-bold uppercase tracking-widest text-zinc-500">
+            Eklocke · Comunidad
+          </p>
+          <h1 className="text-3xl font-black tracking-tight text-zinc-100">
+            Jugadores
+          </h1>
+          <p className="text-sm text-zinc-400">
+            Equipos, Pokémon y medallas de la partida.
+          </p>
+        </div>
+      </section>
+
+      <section className="space-y-3" aria-labelledby="player-list-heading">
+        <h2
+          id="player-list-heading"
+          className="text-sm font-bold uppercase tracking-wide text-zinc-400"
+        >
+          Lista de jugadores
+        </h2>
+
+        {data.status === "ready" && players.length > 0 ? (
+          <div className="grid gap-4 xl:grid-cols-2">
+            {players.map((player) => (
+              <PlayerCard
+                key={player.id}
+                player={player}
+                isCurrentPlayer={player.id === currentPlayer?.id}
+              />
+            ))}
+          </div>
+        ) : data.status === "ready" ? (
+          <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 px-5 py-8 text-center">
+            <span
+              className="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-full border border-zinc-800 bg-zinc-900 text-lg text-zinc-500"
+              aria-hidden="true"
+            >
+              ◉
+            </span>
+            <p className="text-sm font-semibold text-zinc-300">
+              Aún no hay jugadores registrados
+            </p>
+          </div>
+        ) : (
+          <div
+            className="rounded-xl border border-rose-500/30 bg-rose-950/20 px-5 py-6 text-center"
+            role="alert"
+          >
+            <p className="text-sm font-semibold text-rose-100">
+              No se pudieron cargar los jugadores
+            </p>
+            {data.status === "not-configured" && (
+              <p className="mt-2 text-xs text-zinc-400">
+                Faltan variables de servidor: {data.missingVariables.join(", ")}.
+              </p>
+            )}
+            {data.status === "error" && (
+              <p className="mt-2 text-xs text-zinc-400">
+                Revisa la conexión y el esquema de Supabase.
+              </p>
+            )}
+          </div>
+        )}
+      </section>
+
+    </div>
+  );
+}
+
+export default function PlayersPage() {
+  return <PlayersContent />;
+}

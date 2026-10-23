@@ -1,0 +1,130 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: dark;
+  --background: #080b16;
+  --foreground: #eef2ff;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+  scroll-behavior: smooth;
+  background: #080b16;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  background: transparent;
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+body::before {
+  position: fixed;
+  z-index: 0;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 12% 8%, rgb(13 148 136 / 18%), transparent 38rem),
+    radial-gradient(ellipse at 88% 24%, rgb(124 58 237 / 16%), transparent 42rem),
+    radial-gradient(ellipse at 56% 100%, rgb(8 145 178 / 12%), transparent 46rem),
+    linear-gradient(145deg, #080b16 0%, #0b1020 52%, #101022 100%);
+  content: "";
+  pointer-events: none;
+}
+
+.ambient-backdrop {
+  position: fixed;
+  z-index: 1;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.ambient-pokemon {
+  position: absolute;
+  display: block;
+  opacity: 0.22;
+}
+
+.ambient-pokemon-sprite {
+  object-fit: contain;
+}
+
+.ambient-pokemon-float-0 {
+  animation: ambient-float-a 18s ease-in-out infinite alternate;
+}
+
+.ambient-pokemon-float-1 {
+  animation: ambient-float-b 21s ease-in-out infinite alternate;
+}
+
+.ambient-pokemon-float-2 {
+  animation: ambient-float-c 19s ease-in-out infinite alternate;
+}
+
+.ambient-pokemon-float-3 {
+  animation: ambient-float-d 22s ease-in-out infinite alternate;
+}
+
+@keyframes ambient-float-a {
+  to {
+    transform: translate3d(58px, -46px, 0) rotate(18deg);
+  }
+}
+
+@keyframes ambient-float-b {
+  to {
+    transform: translate3d(-52px, 42px, 0) rotate(-16deg);
+  }
+}
+
+@keyframes ambient-float-c {
+  to {
+    transform: translate3d(46px, 50px, 0) rotate(-14deg);
+  }
+}
+
+@keyframes ambient-float-d {
+  to {
+    transform: translate3d(-54px, -44px, 0) rotate(17deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid #2dd4bf;
+  outline-offset: 3px;
+}
+
+::selection {
+  background: rgb(167 139 250 / 35%);
+  color: #fff;
+}
