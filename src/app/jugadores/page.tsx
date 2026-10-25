@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { connection } from "next/server";
+import PlayerFilter from "@/components/PlayerFilter";
 import PokemonSprite from "@/components/PokemonSprite";
 import { getCurrentPlayer } from "@/lib/auth";
 import { getSupabaseConfiguration } from "@/lib/supabase/admin";
+import { matchesPlayerSearch } from "@/lib/player-search";
 import type { PlayerCardData } from "@/lib/supabase/player-data";
 import { getPlayersPageData } from "@/lib/supabase/player-data";
 
@@ -198,7 +200,7 @@ function PlayerCard({
   );
 }
 
-async function PlayersContent() {
+async function PlayersContent({ query }: { query: string }) {
   await connection();
   const [data, currentPlayer] = await Promise.all([
     getPlayersPageData(),
@@ -221,6 +223,15 @@ async function PlayersContent() {
         );
       })
     : [];
+  const filteredPlayers = query
+    ? players.filter((player) =>
+        matchesPlayerSearch(query, [
+          player.gameTrainerName,
+          player.displayName,
+          player.username,
+        ]),
+      )
+    : players;
 
   return (
     <div className="space-y-6">
@@ -256,17 +267,42 @@ async function PlayersContent() {
           Lista de jugadores
         </h2>
 
-        {data.status === "ready" && players.length > 0 ? (
-          <div className="grid gap-4 xl:grid-cols-2">
-            {players.map((player) => (
-              <PlayerCard
-                key={player.id}
-                player={player}
-                isCurrentPlayer={player.id === currentPlayer?.id}
-              />
-            ))}
+        {data.status === "ready" && players.length > 0 && (
+          <div className="space-y-4">
+            <PlayerFilter
+              players={players.map((player) => ({
+                id: player.id,
+                name: player.gameTrainerName || player.displayName,
+              }))}
+              query={query}
+              resetHref="/jugadores"
+            />
+            {filteredPlayers.length > 0 ? (
+              <>
+                {query && (
+                  <p className="text-xs text-zinc-500">
+                    {filteredPlayers.length} de {players.length} jugadores
+                  </p>
+                )}
+                <div className="grid gap-4 xl:grid-cols-2">
+                  {filteredPlayers.map((player) => (
+                    <PlayerCard
+                      key={player.id}
+                      player={player}
+                      isCurrentPlayer={player.id === currentPlayer?.id}
+                    />
+                  ))}
+                </div>
+              </>
+            ) : (
+              <p className="rounded-xl border border-zinc-800 bg-zinc-900/50 px-5 py-8 text-center text-sm text-zinc-400">
+                No hay jugadores que coincidan con «{query}».
+              </p>
+            )}
           </div>
-        ) : data.status === "ready" ? (
+        )}
+
+        {data.status === "ready" && players.length === 0 ? (
           <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 px-5 py-8 text-center">
             <span
               className="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-full border border-zinc-800 bg-zinc-900 text-lg text-zinc-500"
@@ -278,7 +314,7 @@ async function PlayersContent() {
               Aún no hay jugadores registrados
             </p>
           </div>
-        ) : (
+        ) : data.status !== "ready" ? (
           <div
             className="rounded-xl border border-rose-500/30 bg-rose-950/20 px-5 py-6 text-center"
             role="alert"
@@ -297,13 +333,20 @@ async function PlayersContent() {
               </p>
             )}
           </div>
-        )}
+        ) : null}
       </section>
 
     </div>
   );
 }
 
-export default function PlayersPage() {
-  return <PlayersContent />;
+export default async function PlayersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ player?: string | string[] }>;
+}) {
+  const params = await searchParams;
+  const query = typeof params.player === "string" ? params.player.trim() : "";
+
+  return <PlayersContent query={query} />;
 }

@@ -29,6 +29,12 @@ type StagePageData =
       status: "ready";
       routes: RouteDefinition[];
       captures: RouteCapture[];
+      players: Array<{
+        id: string;
+        username: string;
+        displayName: string;
+        gameTrainerName: string | null;
+      }>;
       mapCount: number;
     }
   | { status: "not-configured"; missingVariables: string[] }
@@ -131,14 +137,24 @@ function parsePlayers(value: unknown) {
     if (
       !isRecord(item) ||
       typeof item.id !== "string" ||
+      typeof item.username !== "string" ||
       typeof item.display_name !== "string" ||
+      !(typeof item.game_trainer_name === "string" || item.game_trainer_name === null) ||
       typeof item.color !== "string" ||
-      !/^#[0-9A-Fa-f]{6}$/.test(item.color)
+      !/^#[0-9A-Fa-f]{6}$/.test(item.color) ||
+      typeof item.is_active !== "boolean"
     ) {
       throw new Error("Supabase returned an invalid player record");
     }
 
-    return { id: item.id, displayName: item.display_name, color: item.color };
+    return {
+      id: item.id,
+      username: item.username,
+      displayName: item.display_name,
+      gameTrainerName: item.game_trainer_name,
+      color: item.color,
+      isActive: item.is_active,
+    };
   });
 }
 
@@ -189,23 +205,19 @@ export async function getStagePageData(): Promise<StagePageData> {
       if (pokemonPage.length < pageSize) break;
     }
 
-    const playerIds = [...new Set(pokemon.map((item) => item.playerId))];
-    let players: ReturnType<typeof parsePlayers> = [];
-    if (playerIds.length > 0) {
-      const playersResponse = await supabase
-        .from("players")
-        .select("id,display_name,color")
-        .in("id", playerIds);
+    const playersResponse = await supabase
+      .from("players")
+      .select("id,username,display_name,game_trainer_name,color,is_active")
+      .order("display_name", { ascending: true });
 
-      if (playersResponse.error) {
-        console.error(
-          "Failed to load Consonancia player names:",
-          playersResponse.error.message,
-        );
-        return { status: "error" };
-      }
-      players = parsePlayers(playersResponse.data);
+    if (playersResponse.error) {
+      console.error(
+        "Failed to load Consonancia player names:",
+        playersResponse.error.message,
+      );
+      return { status: "error" };
     }
+    const players = parsePlayers(playersResponse.data);
 
     const playerNames = new Map(
       players.map((player) => [
@@ -248,6 +260,14 @@ export async function getStagePageData(): Promise<StagePageData> {
       status: "ready",
       routes,
       captures,
+      players: players
+        .filter((player) => player.isActive)
+        .map(({ id, username, displayName, gameTrainerName }) => ({
+          id,
+          username,
+          displayName,
+          gameTrainerName,
+        })),
       mapCount: routes.reduce((count, route) => count + route.mapIds.length, 0),
     };
   } catch (error) {

@@ -1,6 +1,8 @@
 import { connection } from "next/server";
 import AbilityTooltip from "@/components/AbilityTooltip";
+import PlayerFilter from "@/components/PlayerFilter";
 import PokemonSprite from "@/components/PokemonSprite";
+import { matchesPlayerSearch } from "@/lib/player-search";
 import type { RouteCapture } from "@/lib/supabase/route-data";
 import { ROUTE_STAGES } from "@/lib/stage-catalog";
 import { getStagePageData } from "@/lib/supabase/route-data";
@@ -160,7 +162,7 @@ function getSpecialSourceLabels(
   return labels;
 }
 
-async function StagesContent() {
+async function StagesContent({ query }: { query: string }) {
   await connection();
   const data = await getStagePageData();
 
@@ -193,9 +195,23 @@ async function StagesContent() {
   const listedRoutes = data.routes.filter(
     (route) => route.name !== "Centro Pokémon",
   );
+  const matchingPlayerIds = new Set(
+    data.players
+      .filter((player) =>
+        matchesPlayerSearch(query, [
+          player.gameTrainerName,
+          player.displayName,
+          player.username,
+        ]),
+      )
+      .map((player) => player.id),
+  );
+  const captures = query
+    ? data.captures.filter((pokemon) => matchingPlayerIds.has(pokemon.playerId))
+    : data.captures;
   const assignedCaptureIds = new Set<string>();
   const renderedStages = ROUTE_STAGES.map((stage) => {
-    const captures = data.captures
+    const stageCaptures = captures
       .filter(
         (pokemon) =>
           pokemon.originMapId !== null &&
@@ -210,7 +226,7 @@ async function StagesContent() {
           left.species.localeCompare(right.species, "es") ||
           left.playerName.localeCompare(right.playerName, "es"),
       );
-    for (const pokemon of captures) assignedCaptureIds.add(pokemon.id);
+    for (const pokemon of stageCaptures) assignedCaptureIds.add(pokemon.id);
 
     const routes = listedRoutes
       .filter((route) =>
@@ -219,16 +235,27 @@ async function StagesContent() {
         ),
       )
       .sort((left, right) => left.sortOrder - right.sortOrder);
-    const alive = captures.filter((pokemon) => pokemon.status === "alive");
-    const dead = captures.filter((pokemon) => pokemon.status === "dead");
-    const otherStatuses = captures.filter(
+    const alive = stageCaptures.filter((pokemon) => pokemon.status === "alive");
+    const dead = stageCaptures.filter((pokemon) => pokemon.status === "dead");
+    const otherStatuses = stageCaptures.filter(
       (pokemon) => pokemon.status !== "alive" && pokemon.status !== "dead",
     );
-    const sourceLabels = getSpecialSourceLabels(captures, centerRoute?.id);
+    const sourceLabels = getSpecialSourceLabels(stageCaptures, centerRoute?.id);
 
-    return { stage, captures, routes, alive, dead, otherStatuses, sourceLabels };
+    return {
+      stage,
+      captures: stageCaptures,
+      routes,
+      alive,
+      dead,
+      otherStatuses,
+      sourceLabels,
+    };
   });
-  const unassignedCaptures = data.captures.filter(
+  const visibleStages = query
+    ? renderedStages.filter(({ captures: stageCaptures }) => stageCaptures.length > 0)
+    : renderedStages;
+  const unassignedCaptures = captures.filter(
     (pokemon) => !assignedCaptureIds.has(pokemon.id),
   );
   const unassignedSourceLabels = getSpecialSourceLabels(
@@ -240,8 +267,22 @@ async function StagesContent() {
     <div className="space-y-6">
       <StagesHeader />
 
+      <PlayerFilter
+        players={data.players.map((player) => ({
+          id: player.id,
+          name: player.gameTrainerName || player.displayName,
+        }))}
+        query={query}
+        resetHref="/tramos"
+      />
+
+      {query && captures.length === 0 ? (
+        <p className="rounded-xl border border-zinc-800 bg-zinc-950/70 px-5 py-8 text-center text-sm text-zinc-400">
+          No hay Pokémon que coincidan con «{query}».
+        </p>
+      ) : (
       <ol className="space-y-4">
-        {renderedStages.map(({ stage, routes, alive, dead, otherStatuses, sourceLabels }) => (
+        {visibleStages.map(({ stage, routes, alive, dead, otherStatuses, sourceLabels }) => (
           <li
             key={stage.number}
             className="overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950/80"
@@ -316,6 +357,7 @@ async function StagesContent() {
           </li>
         ))}
       </ol>
+      )}
 
       {unassignedCaptures.length > 0 && (
         <section className="space-y-3" aria-labelledby="unassigned-heading">
@@ -358,6 +400,13 @@ function StagesHeader() {
   );
 }
 
-export default function StagesPage() {
-  return <StagesContent />;
+export default async function StagesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ player?: string | string[] }>;
+}) {
+  const params = await searchParams;
+  const query = typeof params.player === "string" ? params.player.trim() : "";
+
+  return <StagesContent query={query} />;
 }
