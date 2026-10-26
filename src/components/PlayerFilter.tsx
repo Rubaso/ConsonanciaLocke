@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useLinkStatus } from "next/link";
 import { useMemo, useState } from "react";
 import { normalizePlayerSearchText } from "@/lib/player-search";
 
@@ -10,6 +11,28 @@ export type PlayerFilterOption = {
   searchValues?: string[];
   secondaryLabel?: string;
 };
+
+function PlayerSuggestionStatus() {
+  const { pending } = useLinkStatus();
+
+  return (
+    <span
+      aria-live="polite"
+      className={`flex shrink-0 items-center gap-1.5 text-[11px] font-semibold text-cyan-200 transition-opacity ${
+        pending ? "opacity-100" : "opacity-0"
+      }`}
+    >
+      <span
+        aria-hidden="true"
+        className={`h-3 w-3 rounded-full border-2 border-cyan-200/30 border-t-cyan-200 ${
+          pending ? "animate-spin" : ""
+        }`}
+      >
+      </span>
+      {pending ? "Cargando…" : ""}
+    </span>
+  );
+}
 
 export default function PlayerFilter({
   players,
@@ -66,16 +89,20 @@ export default function PlayerFilter({
             {suggestions.map((player) => (
               <li key={player.id}>
                 <Link
-                  className="block rounded-md px-3 py-2 text-sm text-zinc-200 transition hover:bg-cyan-950/70 hover:text-cyan-100 focus-visible:bg-cyan-950/70 focus-visible:outline-none"
+                  className="flex items-center justify-between gap-3 rounded-md px-3 py-2 text-sm text-zinc-200 transition hover:bg-cyan-950/70 hover:text-cyan-100 focus-visible:bg-cyan-950/70 focus-visible:outline-none"
                   href={`${resetHref}?player=${encodeURIComponent(player.name)}`}
                   onClick={() => setIsOpen(false)}
+                  prefetch={false}
                 >
-                  <span>{player.name}</span>
-                  {player.secondaryLabel && (
-                    <span className="ml-2 text-xs text-zinc-500">
-                      {player.secondaryLabel}
-                    </span>
-                  )}
+                  <span className="min-w-0 truncate">
+                    {player.name}
+                    {player.secondaryLabel && (
+                      <span className="ml-2 text-xs text-zinc-500">
+                        {player.secondaryLabel}
+                      </span>
+                    )}
+                  </span>
+                  <PlayerSuggestionStatus />
                 </Link>
               </li>
             ))}
