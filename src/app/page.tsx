@@ -15,7 +15,7 @@ import { getPlayerPokepasteHistory } from "@/lib/supabase/player-pokepaste-histo
 import PlayerPokepasteProfile from "@/components/PlayerPokepasteProfile";
 import { getPlayerPokepasteProfile } from "@/lib/supabase/player-pokepaste-profile";
 import PokemonSprite from "@/components/PokemonSprite";
-import { getLatestShinyAnnouncement } from "@/lib/supabase/shiny-announcement";
+import { getRecentShinyAnnouncements } from "@/lib/supabase/shiny-announcement";
 
 async function ActivitySection() {
   await connection();
@@ -41,7 +41,7 @@ async function ActivitySection() {
 
 async function ShinyAnnouncementSection() {
   await connection();
-  const result = await getLatestShinyAnnouncement();
+  const result = await getRecentShinyAnnouncements();
 
   if (result.status === "not-configured") {
     return null;
@@ -53,9 +53,8 @@ async function ShinyAnnouncementSection() {
       </p>
     );
   }
-  if (!result.announcement) return null;
+  if (result.announcements.length === 0) return null;
 
-  const { announcement } = result;
   const dateFormatter = new Intl.DateTimeFormat("es-ES", {
     dateStyle: "medium",
     timeStyle: "short",
@@ -63,40 +62,44 @@ async function ShinyAnnouncementSection() {
   });
 
   return (
-    <aside
-      aria-label="Captura shiny reciente"
-      className="flex items-center gap-4 rounded-xl border border-sky-300/40 bg-sky-950/45 px-4 py-3 shadow-lg shadow-sky-950/20"
-      role="status"
-    >
-      <PokemonSprite
-        species={announcement.species}
-        form={announcement.form}
-        isShiny
-        size={64}
-        framed={false}
-      />
-      <div className="min-w-0 flex-1">
-        <p className="text-xs font-black uppercase tracking-widest text-sky-300">
-          ¡Captura shiny!
-        </p>
-        <p className="mt-1 text-sm font-semibold text-sky-50">
-          {announcement.pokemonName} capturado por{" "}
-          <strong style={{ color: announcement.playerColor }}>
-            {announcement.playerName}
-          </strong>
-        </p>
-        <p className="mt-1 text-xs text-sky-200/70">
-          Capturado el {dateFormatter.format(new Date(announcement.occurredAt))}.
-          Aviso activo hasta el {dateFormatter.format(new Date(announcement.expiresAt))}.
-        </p>
-      </div>
-      <span
-        aria-hidden="true"
-        className="hidden shrink-0 text-2xl text-sky-300 sm:block"
-      >
-        ✦
-      </span>
-    </aside>
+    <div className="space-y-3">
+      {result.announcements.map((announcement) => (
+        <aside
+          aria-label={`Captura shiny de ${announcement.pokemonName}`}
+          className="flex items-center gap-4 rounded-xl border border-sky-300/40 bg-sky-950/45 px-4 py-3 shadow-lg shadow-sky-950/20"
+          key={announcement.id}
+          role="status"
+        >
+          <PokemonSprite
+            species={announcement.species}
+            form={announcement.form}
+            isShiny
+            size={64}
+            framed={false}
+          />
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-black uppercase tracking-widest text-sky-300">
+              ¡Captura shiny!
+            </p>
+            <p className="mt-1 text-sm font-semibold text-sky-50">
+              {announcement.pokemonName} capturado por{" "}
+              <strong style={{ color: announcement.playerColor }}>
+                {announcement.playerName}
+              </strong>
+            </p>
+            <p className="mt-1 text-xs text-sky-200/70">
+              Capturado el {dateFormatter.format(new Date(announcement.occurredAt))}.
+            </p>
+          </div>
+          <span
+            aria-hidden="true"
+            className="hidden shrink-0 text-2xl text-sky-300 sm:block"
+          >
+            ✦
+          </span>
+        </aside>
+      ))}
+    </div>
   );
 }
 
