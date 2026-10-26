@@ -17,6 +17,11 @@ const navigation = [
   { href: "/jugadores", label: "Jugadores" },
   { href: "/tramos", label: "Tramos" },
   { href: "/torneo", label: "Torneo" },
+  {
+    href: "https://docs.google.com/document/d/1KGtqzycVF-ue7uHrjDxIlUxUxm-KOnCyLWBNYpu51f4/edit?tab=t.0",
+    label: "Normas",
+    external: true,
+  },
 ];
 
 const subscribeToNothing = () => () => {};
@@ -187,6 +192,20 @@ export default function SiteHeader() {
         >
           <div className="mx-auto flex w-max gap-1 rounded-xl border border-white/10 bg-slate-900/75 p-1 shadow-inner shadow-white/5">
             {navigation.map((item) => {
+              if ("external" in item && item.external) {
+                return (
+                  <a
+                    key={item.label}
+                    href={item.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-semibold text-slate-300 hover:bg-white/10 hover:text-white"
+                  >
+                    {item.label}
+                  </a>
+                );
+              }
+
               const active =
                 hasMounted &&
                 (pathname === item.href ||

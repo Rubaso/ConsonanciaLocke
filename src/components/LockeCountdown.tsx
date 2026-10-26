@@ -54,7 +54,7 @@ export default function LockeCountdown() {
       />
       <div className="mx-auto max-w-3xl text-center">
         <p className="text-[11px] font-black uppercase tracking-[0.28em] text-cyan-300">
-          La aventura está a punto de empezar
+          Pokémon Consonancia
         </p>
         <h2 className="mt-2 text-2xl font-black tracking-tight text-white sm:text-4xl">
           Cuenta atrás para el Locke
@@ -63,37 +63,31 @@ export default function LockeCountdown() {
           Lunes, 26 de octubre · 00:00 · Hora peninsular
         </p>
 
-        {countdown?.started ? (
-          <p className="mt-7 text-2xl font-black text-amber-200 sm:text-4xl">
-            ¡El Locke ha comenzado! Que empiece la aventura
-          </p>
-        ) : (
-          <div
-            aria-label={
-              countdown
-                ? `${countdown.days} días, ${countdown.hours} horas, ${countdown.minutes} minutos y ${countdown.seconds} segundos`
-                : "Calculando tiempo restante"
-            }
-            className="mt-7 grid grid-cols-4 gap-2 sm:gap-4"
-            role="timer"
-          >
-            {units.map(({ key, label }) => (
-              <div
-                className="rounded-xl border border-white/10 bg-black/25 px-2 py-3 backdrop-blur-sm sm:px-4 sm:py-4"
-                key={key}
-              >
-                <p className="font-mono text-3xl font-black tabular-nums text-white sm:text-5xl">
-                  {countdown
-                    ? String(countdown[key]).padStart(2, "0")
-                    : "--"}
-                </p>
-                <p className="mt-1 text-[9px] font-bold uppercase tracking-wider text-cyan-100/60 sm:text-xs">
-                  {label}
-                </p>
-              </div>
-            ))}
-          </div>
-        )}
+        <div
+          aria-label={
+            countdown
+              ? `${countdown.days} días, ${countdown.hours} horas, ${countdown.minutes} minutos y ${countdown.seconds} segundos`
+              : "Calculando tiempo restante"
+          }
+          className="mt-7 grid grid-cols-4 gap-2 sm:gap-4"
+          role="timer"
+        >
+          {units.map(({ key, label }) => (
+            <div
+              className="rounded-xl border border-white/10 bg-black/25 px-2 py-3 backdrop-blur-sm sm:px-4 sm:py-4"
+              key={key}
+            >
+              <p className="font-mono text-3xl font-black tabular-nums text-white sm:text-5xl">
+                {countdown
+                  ? String(countdown[key]).padStart(2, "0")
+                  : "--"}
+              </p>
+              <p className="mt-1 text-[9px] font-bold uppercase tracking-wider text-cyan-100/60 sm:text-xs">
+                {label}
+              </p>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );
