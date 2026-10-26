@@ -1,6 +1,7 @@
 import "server-only";
 
 import { loadAll } from "@hyrious/marshal";
+import { getRandomizedAbility } from "@/lib/consonancia-randomizer-abilities";
 import { ROUTE_CATALOG } from "@/lib/route-catalog";
 
 export type ImportedPokemon = {
@@ -45,6 +46,12 @@ export type ParsedSave = {
 };
 
 type RubyRecord = Record<PropertyKey, unknown>;
+
+type SaveRandomizerSettings = {
+  enabled: boolean;
+  seed: number | null;
+  abilityMode: string | null;
+};
 
 const routeNameByMapId = new Map(
   ROUTE_CATALOG.flatMap((route) =>
@@ -160,11 +167,81 @@ function movesFromSave(value: unknown): string[] {
   return moves;
 }
 
+function randomizerSettingsFromSave(save: unknown): SaveRandomizerSettings {
+  const metadata = getProperty(save, "global_metadata");
+  const randomizer = getProperty(metadata, "consonancia_random");
+  const options = getProperty(randomizer, "options");
+  return {
+    enabled: getProperty(randomizer, "enabled") === true,
+    seed: boundedNumber(getProperty(randomizer, "seed"), 0, 0xffff_ffff),
+    abilityMode: valueText(getProperty(options, "abilities"))?.toUpperCase() ?? null,
+  };
+}
+
+function importedAbility(value: unknown, randomizer: SaveRandomizerSettings) {
+  const originalAbility = valueText(getProperty(value, "ability"));
+  if (
+    !originalAbility ||
+    !randomizer.enabled ||
+    randomizer.seed === null ||
+    !randomizer.abilityMode ||
+    randomizer.abilityMode === "OFF" ||
+    getProperty(value, "consonancia_random_exempt") === true
+  ) {
+    return displayLabel(originalAbility);
+  }
+
+  const species = valueText(getProperty(value, "species"));
+  if (!species || species.toUpperCase() === "SHEDINJA") {
+    return displayLabel(originalAbility);
+  }
+
+  const personalId = numberValue(getProperty(value, "personalID"));
+  const abilityIndex =
+    boundedNumber(getProperty(value, "ability_index"), 0, 32_767) ??
+    (personalId === null ? null : personalId & 1);
+  if (abilityIndex === null) return displayLabel(originalAbility);
+
+  const form =
+    boundedNumber(
+      getProperty(value, "forced_form") ?? getProperty(value, "form"),
+      0,
+      32_767,
+    ) ?? 0;
+  let key: string;
+
+  switch (randomizer.abilityMode) {
+    case "FULLRANDOM":
+      key = `[:ability_species, :${species}, ${form}, ${abilityIndex}]`;
+      break;
+    case "MAPABILITIES":
+      key = `[:ability_map, :${originalAbility}]`;
+      break;
+    case "SAMEINEVOLUTION": {
+      const family =
+        valueText(getProperty(value, "consonancia_ability_family")) ?? species;
+      key = `[:ability_family, :${family}, ${abilityIndex}]`;
+      break;
+    }
+    default:
+      return displayLabel(originalAbility);
+  }
+
+  return displayLabel(
+    getRandomizedAbility({
+      seed: randomizer.seed,
+      key,
+      originalAbility,
+    }),
+  );
+}
+
 function normalizePokemon(
   value: unknown,
   trainerId: string,
   teamPosition: number | null,
   status: ImportedPokemon["status"],
+  randomizer: SaveRandomizerSettings,
 ): ImportedPokemon | null {
   if (!value) return null;
 
@@ -201,7 +278,7 @@ function normalizePokemon(
     level: boundedNumber(getProperty(value, "level"), 1, 100),
     gender,
     nature: displayLabel(getProperty(value, "nature")),
-    ability: displayLabel(getProperty(value, "ability")),
+    ability: importedAbility(value, randomizer),
     held_item: displayLabel(getProperty(value, "item")),
     is_shiny: getProperty(value, "shiny") === true,
     team_position: teamPosition,
@@ -235,6 +312,7 @@ export function parseConsonanciaSave(data: Uint8Array): ParsedSave {
 
   const save = saveObjects[0];
   const player = getProperty(save, "player");
+  const randomizer = randomizerSettingsFromSave(save);
   const party = getProperty(player, "party");
   const trainerIdValue = getProperty(player, "id");
   const trainerName = valueText(getProperty(player, "name")) ?? "Desconocido";
@@ -257,6 +335,7 @@ export function parseConsonanciaSave(data: Uint8Array): ParsedSave {
       trainerId,
       index < 6 ? index + 1 : null,
       "alive",
+      randomizer,
     );
     if (imported) pokemonByIdentity.set(imported.source_identity, imported);
   });
@@ -275,6 +354,7 @@ export function parseConsonanciaSave(data: Uint8Array): ParsedSave {
           trainerId,
           null,
           isDeadBox ? "dead" : "alive",
+          randomizer,
         );
         if (imported && !pokemonByIdentity.has(imported.source_identity)) {
           pokemonByIdentity.set(imported.source_identity, imported);
