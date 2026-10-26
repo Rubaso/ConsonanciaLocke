@@ -7,6 +7,7 @@ type PlayerSettingsDialogProps = {
   open: boolean;
   color: string;
   twitchUsername: string | null;
+  trainerSprite: string | null;
   onClose: () => void;
 };
 
@@ -14,6 +15,7 @@ export default function PlayerSettingsDialog({
   open,
   color,
   twitchUsername,
+  trainerSprite,
   onClose,
 }: PlayerSettingsDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -56,6 +58,7 @@ export default function PlayerSettingsDialog({
           <PlayerSettingsForm
             initialColor={color}
             initialTwitchUsername={twitchUsername}
+            initialTrainerSprite={trainerSprite}
           />
         </section>
       </div>

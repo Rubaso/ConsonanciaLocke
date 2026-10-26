@@ -3,6 +3,7 @@ import "server-only";
 import { createHash, createHmac, randomBytes } from "node:crypto";
 import { cookies } from "next/headers";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { isTrainerSpriteName } from "@/lib/trainer-sprites";
 
 export const SESSION_COOKIE_NAME = "consonancia_session";
 export const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
@@ -14,6 +15,7 @@ export type PlayerSession = {
   role: "player" | "organizer";
   color: string;
   twitchUsername: string | null;
+  trainerSprite: string | null;
 };
 
 export function createSessionToken() {
@@ -71,7 +73,7 @@ export async function getCurrentPlayer(): Promise<PlayerSession | null> {
 
   const playerResponse = await supabase
     .from("players")
-    .select("id,username,display_name,role,is_active,color,twitch_username")
+    .select("id,username,display_name,role,is_active,color,twitch_username,trainer_sprite")
     .eq("id", session.player_id)
     .maybeSingle();
 
@@ -90,5 +92,8 @@ export async function getCurrentPlayer(): Promise<PlayerSession | null> {
     role: player.role,
     color: player.color,
     twitchUsername: player.twitch_username,
+    trainerSprite: isTrainerSpriteName(player.trainer_sprite)
+      ? player.trainer_sprite
+      : null,
   };
 }

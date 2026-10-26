@@ -6,7 +6,7 @@ import { getCurrentPlayer } from "@/lib/auth";
 
 export const metadata = {
   title: "Ajustes | EKLOCKE",
-  description: "Personaliza tu nombre y vincula tu canal de Twitch.",
+  description: "Personaliza tu perfil, elige tu personaje y vincula tu canal de Twitch.",
 };
 
 async function SettingsContent() {
@@ -22,12 +22,13 @@ async function SettingsContent() {
         </p>
         <h1 className="text-3xl font-black text-white">Ajustes</h1>
         <p className="text-sm text-slate-400">
-          El color se aplica a tu nombre en la web. Puedes añadir ahora tu canal de Twitch.
+          Personaliza el color y el personaje de tu perfil, y vincula tu canal de Twitch.
         </p>
       </header>
       <PlayerSettingsForm
         initialColor={player.color}
         initialTwitchUsername={player.twitchUsername}
+        initialTrainerSprite={player.trainerSprite}
       />
     </main>
   );

@@ -4,6 +4,7 @@ export type PublicPlayer = {
   role: "player" | "organizer";
   color: string;
   twitchUsername: string | null;
+  trainerSprite: string | null;
 };
 
 export const PLAYER_SESSION_EVENT = "consonancia:session";

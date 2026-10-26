@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCurrentPlayer } from "@/lib/auth";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { isTrainerSpriteName } from "@/lib/trainer-sprites";
 
 const COLOR_PATTERN = /^#[0-9A-Fa-f]{6}$/;
 const TWITCH_LOGIN_PATTERN = /^[A-Za-z0-9_]{1,25}$/;
@@ -68,17 +69,28 @@ export async function PATCH(request: Request) {
     body === null ||
     !("color" in body) ||
     !("twitchUsername" in body) ||
+    !("trainerSprite" in body) ||
     typeof body.color !== "string" ||
     typeof body.twitchUsername !== "string" ||
+    !(typeof body.trainerSprite === "string" || body.trainerSprite === null) ||
     !COLOR_PATTERN.test(body.color)
   ) {
-    return NextResponse.json({ error: "Revisa el color y el usuario de Twitch." }, { status: 400 });
+    return NextResponse.json(
+      { error: "Revisa el color, el usuario de Twitch y el personaje." },
+      { status: 400 },
+    );
   }
 
   const twitchUsername = normalizeTwitchLogin(body.twitchUsername);
   if (twitchUsername === undefined) {
     return NextResponse.json(
       { error: "Introduce un usuario de Twitch o una URL de canal válida." },
+      { status: 400 },
+    );
+  }
+  if (body.trainerSprite !== null && !isTrainerSpriteName(body.trainerSprite)) {
+    return NextResponse.json(
+      { error: "El personaje seleccionado no es válido." },
       { status: 400 },
     );
   }
@@ -96,7 +108,11 @@ export async function PATCH(request: Request) {
   const supabase = createSupabaseAdminClient();
   const response = await supabase
     .from("players")
-    .update({ color: body.color, twitch_username: twitchUsername })
+    .update({
+      color: body.color,
+      twitch_username: twitchUsername,
+      trainer_sprite: body.trainerSprite,
+    })
     .eq("id", player.id)
     .eq("is_active", true)
     .select("id")
@@ -115,6 +131,7 @@ export async function PATCH(request: Request) {
     player: {
       color: body.color,
       twitchUsername,
+      trainerSprite: body.trainerSprite,
     },
   });
 }

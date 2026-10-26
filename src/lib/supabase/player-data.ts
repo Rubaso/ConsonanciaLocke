@@ -8,6 +8,7 @@ import {
   getLiveTwitchPlayerIds,
   isTwitchConfigured,
 } from "@/lib/twitch/live-status";
+import { isTrainerSpriteName } from "@/lib/trainer-sprites";
 
 export type PlayerCardData = {
   id: string;
@@ -15,6 +16,7 @@ export type PlayerCardData = {
   displayName: string;
   gameTrainerName: string | null;
   twitchUsername: string | null;
+  trainerSprite: string | null;
   isLive: boolean;
   color: string;
   medals: Array<{ id: number; name: string; earned: boolean }>;
@@ -48,6 +50,7 @@ export type PlayerBoxData = {
   username: string;
   displayName: string;
   gameTrainerName: string | null;
+  trainerSprite: string | null;
   color: string;
   pokemon: PlayerBoxPokemon[];
 };
@@ -84,6 +87,8 @@ function parsePlayers(value: unknown) {
       typeof item.display_name !== "string" ||
       !(typeof item.game_trainer_name === "string" || item.game_trainer_name === null) ||
       !(typeof item.twitch_username === "string" || item.twitch_username === null) ||
+      !(typeof item.trainer_sprite === "string" || item.trainer_sprite === null) ||
+      (item.trainer_sprite !== null && !isTrainerSpriteName(item.trainer_sprite)) ||
       typeof item.color !== "string" ||
       !/^#[0-9A-Fa-f]{6}$/.test(item.color)
     ) {
@@ -96,6 +101,7 @@ function parsePlayers(value: unknown) {
       displayName: item.display_name,
       gameTrainerName: item.game_trainer_name,
       twitchUsername: item.twitch_username,
+      trainerSprite: item.trainer_sprite,
       color: item.color,
     };
   });
@@ -227,6 +233,8 @@ function parseBoxPlayer(value: unknown): Omit<PlayerBoxData, "pokemon"> {
     typeof value.username !== "string" ||
     typeof value.display_name !== "string" ||
     !(typeof value.game_trainer_name === "string" || value.game_trainer_name === null) ||
+    !(typeof value.trainer_sprite === "string" || value.trainer_sprite === null) ||
+    (value.trainer_sprite !== null && !isTrainerSpriteName(value.trainer_sprite)) ||
     typeof value.color !== "string" ||
     !/^#[0-9A-Fa-f]{6}$/.test(value.color)
   ) {
@@ -238,6 +246,7 @@ function parseBoxPlayer(value: unknown): Omit<PlayerBoxData, "pokemon"> {
     username: value.username,
     displayName: value.display_name,
     gameTrainerName: value.game_trainer_name,
+    trainerSprite: value.trainer_sprite,
     color: value.color,
   };
 }
@@ -254,7 +263,7 @@ export async function getPlayersPageData(): Promise<PlayersPageData> {
   const supabase = createSupabaseAdminClient();
   const playersResponse = await supabase
     .from("players")
-    .select("id,username,display_name,game_trainer_name,twitch_username,color")
+    .select("id,username,display_name,game_trainer_name,twitch_username,trainer_sprite,color")
     .eq("is_active", true)
     .order("display_name", { ascending: true })
     .limit(40);
@@ -370,7 +379,7 @@ export async function getPlayerBoxPageData(
   const supabase = createSupabaseAdminClient();
   const playerResponse = await supabase
     .from("players")
-    .select("id,username,display_name,game_trainer_name,color")
+    .select("id,username,display_name,game_trainer_name,trainer_sprite,color")
     .eq("id", playerId)
     .eq("is_active", true)
     .maybeSingle();

@@ -3,6 +3,7 @@ import { connection } from "next/server";
 import { notFound } from "next/navigation";
 import AbilityTooltip from "@/components/AbilityTooltip";
 import PokemonSprite from "@/components/PokemonSprite";
+import TrainerSpriteAvatar from "@/components/TrainerSpriteAvatar";
 import {
   getPlayerBoxPageData,
   type PlayerBoxPokemon,
@@ -148,15 +149,21 @@ async function PlayerBoxContent({
       </Link>
 
       <header className="flex flex-wrap items-center gap-4 rounded-xl border border-zinc-800 bg-slate-950/75 p-5">
-        <span
-          className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border-2 bg-zinc-900 text-xl font-black text-white"
-          style={{ borderColor: player.color }}
-          aria-hidden="true"
-        >
-          {(player.gameTrainerName || player.displayName)
-            .slice(0, 1)
-            .toUpperCase()}
-        </span>
+        {player.trainerSprite ? (
+          <span className="flex h-24 w-20 shrink-0 items-center justify-center" aria-hidden="true">
+            <TrainerSpriteAvatar name={player.trainerSprite} size={96} />
+          </span>
+        ) : (
+          <span
+            className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border-2 bg-zinc-900 text-xl font-black text-white"
+            style={{ borderColor: player.color }}
+            aria-hidden="true"
+          >
+            {(player.gameTrainerName || player.displayName)
+              .slice(0, 1)
+              .toUpperCase()}
+          </span>
+        )}
         <div className="min-w-0 flex-1">
           <p className="text-xs font-bold uppercase tracking-widest text-zinc-500">
             Caja de jugador

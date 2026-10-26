@@ -31,6 +31,7 @@ Apply these files in order to the **new Consonancia project**:
 22. `20261023043000_name_individual_rounds.sql`
 23. `20261023044000_change_individual_match_winner.sql`
 24. `20261023230000_twitch_live_status_cache.sql`
+25. `20261026023000_player_trainer_sprite.sql`
 
 The initial migration creates 13 tables for player accounts and sessions,
 login throttling, the save-derived route catalog, Pokémon and moves, five
@@ -114,6 +115,10 @@ matches and verifies that the selected winner is one of the participants.
 The twenty-fourth migration creates the private server-side cache of Twitch
 live status. The scheduled refresh writes to this table; browser requests only
 read the cached live channels.
+The twenty-fifth migration adds an optional trainer sprite selection to each
+player profile. The app serves the permitted trainer images from its own
+`public/trainer-sprites` directory and validates selections against that local
+catalogue.
 
 ## Security
 
@@ -133,9 +138,10 @@ read the cached live channels.
 - Save files are uploaded only for transient server-side parsing and are never
   stored. The per-player `source_identity` column and the import RPC make
   repeated Pokémon and medal imports idempotent.
-- The app includes a minimal server-side login/session flow. Player
-  settings can update a player's name color and Twitch channel; live-stream
-  notifications and player administration are not implemented yet.
+- The app includes a minimal server-side login/session flow. Player settings
+  can update a player's name color, Twitch channel, and trainer sprite. The
+  trainer sprite value is restricted to the bundled catalogue; the browser
+  cannot submit an arbitrary image path.
 - Poképast.es URLs are stored on the player profile and snapshotted per match
   participant. The profile URL is returned only to its owner. Participants can
   prepare links while a tournament or individual round is a draft; only the
@@ -169,7 +175,7 @@ If using the dashboard instead of the CLI:
    `medals` 5. No player rows should exist yet.
 
 If an existing database has applied the first *n* migrations, apply migrations
-*n+1* through 24 in order. The route catalog migration (4) must precede
+*n+1* through 25 in order. The route catalog migration (4) must precede
 migration 5 on databases that have not applied it yet. Migration 3 adds a
 nullable `pin` column and removes the old `pin_hash`; existing player records
 remain, but you must assign them PINs before those players can log in. Their

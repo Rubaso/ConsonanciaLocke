@@ -305,7 +305,7 @@ function normalizePokemon(
 export function parseConsonanciaSave(data: Uint8Array): ParsedSave {
   let saveObjects: unknown[];
   try {
-    saveObjects = loadAll(data);
+    saveObjects = loadAll(data, { string: "binary" });
   } catch {
     throw new Error("El archivo no es un save válido de Pokémon Consonancia.");
   }

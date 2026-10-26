@@ -2,6 +2,7 @@ import Link from "next/link";
 import { connection } from "next/server";
 import PlayerFilter from "@/components/PlayerFilter";
 import PokemonSprite from "@/components/PokemonSprite";
+import TrainerSpriteAvatar from "@/components/TrainerSpriteAvatar";
 import { getCurrentPlayer } from "@/lib/auth";
 import { getSupabaseConfiguration } from "@/lib/supabase/admin";
 import { matchesPlayerSearch } from "@/lib/player-search";
@@ -56,15 +57,21 @@ function PlayerCard({
       >
         <header className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-800 px-4 py-3">
           <div className="flex min-w-0 items-center gap-3">
-            <span
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border bg-zinc-800 text-sm font-black text-white"
-              style={{ borderColor: accentColor }}
-              aria-hidden="true"
-            >
-              {(player.gameTrainerName || player.displayName)
-                .slice(0, 1)
-                .toUpperCase()}
-            </span>
+            {player.trainerSprite ? (
+              <span className="flex h-16 w-14 shrink-0 items-center justify-center" aria-hidden="true">
+                <TrainerSpriteAvatar name={player.trainerSprite} size={64} />
+              </span>
+            ) : (
+              <span
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border bg-zinc-800 text-sm font-black text-white"
+                style={{ borderColor: accentColor }}
+                aria-hidden="true"
+              >
+                {(player.gameTrainerName || player.displayName)
+                  .slice(0, 1)
+                  .toUpperCase()}
+              </span>
+            )}
             <div className="min-w-0">
               <h3
                 className="truncate font-semibold"

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import PlayerSettingsDialog from "@/components/PlayerSettingsDialog";
+import TrainerSpriteAvatar from "@/components/TrainerSpriteAvatar";
 import TwitchLiveIndicator from "@/components/TwitchLiveIndicator";
 import {
   PLAYER_SESSION_EVENT,
@@ -96,6 +97,7 @@ function HeaderSession() {
         open={settingsOpen}
         color={player.color}
         twitchUsername={player.twitchUsername}
+        trainerSprite={player.trainerSprite}
         onClose={() => setSettingsOpen(false)}
       />
       <Link
@@ -142,6 +144,11 @@ function HeaderSession() {
         title={player.displayName}
         style={{ color: player.color }}
       >
+        {player.trainerSprite && (
+          <span className="mr-1.5 inline-flex h-10 w-8 shrink-0 items-center justify-center align-middle">
+            <TrainerSpriteAvatar name={player.trainerSprite} size={40} />
+          </span>
+        )}
         {player.displayName}
       </Link>
       <button
