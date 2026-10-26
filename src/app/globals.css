@@ -31,6 +31,67 @@ body {
   font-family: var(--font-geist-sans), system-ui, sans-serif;
 }
 
+.medal-slot {
+  position: relative;
+  isolation: isolate;
+}
+
+.medal-silhouette {
+  filter: brightness(0);
+  opacity: 0.82;
+}
+
+.medal-slot-earned::before {
+  position: absolute;
+  z-index: 0;
+  inset: -0.35rem;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgb(250 204 21 / 38%), rgb(250 204 21 / 0%) 72%);
+  content: "";
+  animation: medal-glow 2.4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.medal-slot-earned::after {
+  position: absolute;
+  z-index: 20;
+  top: -0.35rem;
+  right: -0.2rem;
+  color: #fde68a;
+  content: "✦";
+  font-size: 0.75rem;
+  line-height: 1;
+  text-shadow: 0 0 0.45rem rgb(250 204 21 / 90%);
+  animation: medal-twinkle 1.8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes medal-glow {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(0.92);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+}
+
+@keyframes medal-twinkle {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(0.75) rotate(-12deg);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.15) rotate(12deg);
+  }
+}
+
 body::before {
   position: fixed;
   z-index: 0;

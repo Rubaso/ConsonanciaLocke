@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { connection } from "next/server";
 import PlayerFilter from "@/components/PlayerFilter";
 import PokemonSprite from "@/components/PokemonSprite";
@@ -112,25 +113,21 @@ function PlayerCard({
                   key={medal.id}
                   title={medal.name}
                   aria-label={`${medal.name}: ${medal.earned ? "obtenida" : "pendiente"}`}
-                  className={`flex h-10 w-10 items-center justify-center rounded-full border ${
+                  className={`medal-slot flex h-10 w-10 items-center justify-center rounded-full border ${
                     medal.earned
-                      ? "border-amber-300/40 bg-amber-400/15 text-amber-200"
-                      : "border-zinc-700 bg-zinc-950 text-zinc-700 grayscale"
+                      ? "medal-slot-earned border-amber-300/40 bg-amber-400/15"
+                      : "border-zinc-700 bg-zinc-950"
                   }`}
                 >
-                  <svg
+                  <Image
+                    src={`/medals/medal-clean-${medal.id}.png`}
+                    alt=""
+                    width={40}
+                    height={40}
                     aria-hidden="true"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    className="h-5 w-5"
-                  >
-                    <path
-                      d="M12 2.75 14.6 8l5.8.85-4.2 4.1 1 5.8-5.2-2.75-5.2 2.75 1-5.8-4.2-4.1L9.4 8 12 2.75Z"
-                      stroke="currentColor"
-                      strokeLinejoin="round"
-                      strokeWidth="1.4"
-                    />
-                  </svg>
+                    className={medal.earned ? "relative z-10" : ""}
+                    style={medal.earned ? undefined : { filter: "brightness(0)" }}
+                  />
                 </span>
               ))}
             </div>

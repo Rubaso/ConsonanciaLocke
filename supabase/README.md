@@ -33,6 +33,7 @@ Apply these files in order to the **new Consonancia project**:
 24. `20261023230000_twitch_live_status_cache.sql`
 25. `20261026023000_player_trainer_sprite.sql`
 26. `20261026132000_authentication_retry_30_seconds.sql`
+27. `20261026190000_player_game_data_wipe.sql`
 
 The initial migration creates 13 tables for player accounts and sessions,
 login throttling, the save-derived route catalog, Pokémon and moves, five
@@ -123,6 +124,10 @@ catalogue.
 The twenty-sixth migration shortens the login failure window and lockout to
 30 seconds for testing. Any currently active lockouts are capped at 30 seconds
 from the time the migration is applied.
+The twenty-seventh migration adds an atomic player progress reset. It deletes a
+player's Pokémon, medals, and activity events and clears the in-game trainer name
+imported from the save. It preserves the account, profile settings, and
+tournament history.
 
 ## Security
 
@@ -142,6 +147,11 @@ from the time the migration is applied.
 - Save files are uploaded only for transient server-side parsing and are never
   stored. The per-player `source_identity` column and the import RPC make
   repeated Pokémon and medal imports idempotent.
+- Players can reset their own save-derived progress from **Ajustes** after
+  confirming the irreversible action. The server derives the player ID from
+  the validated session; a service-role-only transaction deletes their
+  Pokémon, medals, and activity events, then clears their in-game trainer name.
+  Account data, profile settings, and tournament history are preserved.
 - The app includes a minimal server-side login/session flow. Player settings
   can update a player's name color, Twitch channel, and trainer sprite. The
   trainer sprite value is restricted to the bundled catalogue; the browser
@@ -179,7 +189,7 @@ If using the dashboard instead of the CLI:
    `medals` 5. No player rows should exist yet.
 
 If an existing database has applied the first *n* migrations, apply migrations
-*n+1* through 26 in order. The route catalog migration (4) must precede
+*n+1* through 27 in order. The route catalog migration (4) must precede
 migration 5 on databases that have not applied it yet. Migration 3 adds a
 nullable `pin` column and removes the old `pin_hash`; existing player records
 remain, but you must assign them PINs before those players can log in. Their

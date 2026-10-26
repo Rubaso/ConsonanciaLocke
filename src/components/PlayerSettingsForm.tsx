@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { notifyPlayerSessionChanged } from "@/lib/player-session";
 import { trainerSpriteNames } from "@/lib/trainer-sprites";
 
@@ -23,6 +24,7 @@ export default function PlayerSettingsForm({
   initialTwitchUsername,
   initialTrainerSprite,
 }: Props) {
+  const router = useRouter();
   const [color, setColor] = useState(initialColor);
   const [twitchUsername, setTwitchUsername] = useState(initialTwitchUsername ?? "");
   const [trainerSprite, setTrainerSprite] = useState(initialTrainerSprite);
@@ -32,6 +34,9 @@ export default function PlayerSettingsForm({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [saved, setSaved] = useState(false);
+  const [wiping, setWiping] = useState(false);
+  const [wipeError, setWipeError] = useState("");
+  const [wipeComplete, setWipeComplete] = useState(false);
 
   const normalizedSpriteQuery = spriteQuery.trim().toLowerCase();
   const matchingSprites = trainerSpriteNames.filter((name) =>
@@ -63,6 +68,41 @@ export default function PlayerSettingsForm({
       setError("No se pudo conectar con el servidor. Prueba otra vez.");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function wipeGameData() {
+    if (
+      !window.confirm(
+        "Se borrarán permanentemente todos tus Pokémon, medallas y eventos de actividad, y tu nombre de entrenador del save. Tu cuenta, ajustes y resultados del torneo no se borrarán. ¿Quieres continuar?",
+      )
+    ) {
+      return;
+    }
+
+    setWiping(true);
+    setWipeError("");
+    setWipeComplete(false);
+
+    try {
+      const response = await fetch("/api/player/wipe", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ confirmation: "¡HE WIPEADO!" }),
+      });
+      const result = (await response.json()) as { error?: string; ok?: boolean };
+
+      if (!response.ok || !result.ok) {
+        setWipeError(result.error ?? "No se pudo reiniciar tu partida.");
+        return;
+      }
+
+      setWipeComplete(true);
+      router.refresh();
+    } catch {
+      setWipeError("No se pudo conectar con el servidor. Prueba otra vez.");
+    } finally {
+      setWiping(false);
     }
   }
 
@@ -241,11 +281,38 @@ export default function PlayerSettingsForm({
 
       <button
         className="rounded-lg border border-violet-300/35 bg-violet-400/15 px-4 py-2.5 text-sm font-bold text-violet-100 transition hover:bg-violet-400/25 disabled:cursor-not-allowed disabled:opacity-50"
-        disabled={saving}
+        disabled={saving || wiping}
         type="submit"
       >
         {saving ? "Guardando…" : "Guardar ajustes"}
       </button>
+
+      <section className="space-y-3 rounded-xl border border-rose-500/30 bg-rose-950/20 p-4">
+        <div>
+          <h2 className="text-sm font-bold text-rose-200">Reiniciar partida</h2>
+          <p className="mt-1 text-xs leading-relaxed text-rose-100/70">
+            Se borrarán todos tus Pokémon, medallas y eventos de actividad, y el nombre de entrenador importado del save. La cuenta, los ajustes del perfil y el historial del torneo se conservarán. Esta acción no se puede deshacer.
+          </p>
+        </div>
+        {wipeError && (
+          <p className="rounded-lg border border-rose-400/25 bg-rose-950/40 px-3 py-2 text-sm text-rose-200" role="alert">
+            {wipeError}
+          </p>
+        )}
+        {wipeComplete && (
+          <p className="text-sm text-rose-100" role="status">
+            Partida reiniciada.
+          </p>
+        )}
+        <button
+          type="button"
+          onClick={wipeGameData}
+          disabled={wiping || saving}
+          className="rounded-lg border border-rose-400/50 bg-rose-600 px-4 py-2.5 text-sm font-black text-white transition hover:bg-rose-500 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {wiping ? "Reiniciando…" : "¡HE WIPEADO!"}
+        </button>
+      </section>
     </form>
   );
 }
