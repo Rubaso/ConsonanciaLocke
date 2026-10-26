@@ -3,7 +3,6 @@ import Link from "next/link";
 import { connection } from "next/server";
 import { getCurrentPlayer } from "@/lib/auth";
 import ActivityFeed from "@/components/ActivityFeed";
-import LockeCountdown from "@/components/LockeCountdown";
 import { getActivityPageData } from "@/lib/supabase/activity-data";
 import {
   createSupabaseAdminClient,
@@ -335,8 +334,6 @@ async function TournamentBanner() {
 export default function Home() {
   return (
     <div className="space-y-6">
-      <LockeCountdown />
-
       <section className="space-y-1">
         <p className="text-xs font-bold uppercase tracking-widest text-zinc-500">Evento</p>
         <h1 className="text-3xl font-black tracking-tight text-zinc-100">

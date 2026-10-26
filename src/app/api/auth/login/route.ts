@@ -78,7 +78,7 @@ export async function POST(request: Request) {
     return jsonError("El acceso no está disponible temporalmente.", 503);
   }
   if (blockedResponse.data === true) {
-    return jsonError("Demasiados intentos. Espera 15 minutos antes de probar otra vez.", 429);
+    return jsonError("Demasiados intentos. Espera 30 segundos antes de probar otra vez.", 429);
   }
 
   const playerResponse = await supabase
@@ -111,7 +111,7 @@ export async function POST(request: Request) {
 
     return jsonError(
       failureResponse.data === true
-        ? "Demasiados intentos. Espera 15 minutos antes de probar otra vez."
+        ? "Demasiados intentos. Espera 30 segundos antes de probar otra vez."
         : "Usuario o PIN incorrectos.",
       failureResponse.data === true ? 429 : 401,
     );

@@ -32,6 +32,7 @@ Apply these files in order to the **new Consonancia project**:
 23. `20261023044000_change_individual_match_winner.sql`
 24. `20261023230000_twitch_live_status_cache.sql`
 25. `20261026023000_player_trainer_sprite.sql`
+26. `20261026132000_authentication_retry_30_seconds.sql`
 
 The initial migration creates 13 tables for player accounts and sessions,
 login throttling, the save-derived route catalog, Pokémon and moves, five
@@ -119,6 +120,9 @@ The twenty-fifth migration adds an optional trainer sprite selection to each
 player profile. The app serves the permitted trainer images from its own
 `public/trainer-sprites` directory and validates selections against that local
 catalogue.
+The twenty-sixth migration shortens the login failure window and lockout to
+30 seconds for testing. Any currently active lockouts are capped at 30 seconds
+from the time the migration is applied.
 
 ## Security
 
@@ -175,7 +179,7 @@ If using the dashboard instead of the CLI:
    `medals` 5. No player rows should exist yet.
 
 If an existing database has applied the first *n* migrations, apply migrations
-*n+1* through 25 in order. The route catalog migration (4) must precede
+*n+1* through 26 in order. The route catalog migration (4) must precede
 migration 5 on databases that have not applied it yet. Migration 3 adds a
 nullable `pin` column and removes the old `pin_hash`; existing player records
 remain, but you must assign them PINs before those players can log in. Their
