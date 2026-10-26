@@ -2,6 +2,7 @@ import { connection } from "next/server";
 import AbilityTooltip from "@/components/AbilityTooltip";
 import PlayerFilter from "@/components/PlayerFilter";
 import PokemonSprite from "@/components/PokemonSprite";
+import { getCurrentPlayer } from "@/lib/auth";
 import { matchesPlayerSearch } from "@/lib/player-search";
 import type { RouteCapture } from "@/lib/supabase/route-data";
 import { ROUTE_STAGES } from "@/lib/stage-catalog";
@@ -164,7 +165,10 @@ function getSpecialSourceLabels(
 
 async function StagesContent({ query }: { query: string }) {
   await connection();
-  const data = await getStagePageData();
+  const [data, currentPlayer] = await Promise.all([
+    getStagePageData(),
+    getCurrentPlayer(),
+  ]);
 
   if (data.status !== "ready") {
     return (
@@ -204,12 +208,12 @@ async function StagesContent({ query }: { query: string }) {
             player.username,
           ]),
         )
-      : data.players.find((player) =>
+      : data.players.find((player) => player.id === currentPlayer?.id) ??
+        data.players.find((player) =>
           [player.gameTrainerName, player.displayName, player.username].some(
             (value) => value?.toLocaleLowerCase("es").startsWith("zigurath"),
           ),
         );
-  const selectedQuery = query || selectedPlayer?.gameTrainerName || selectedPlayer?.displayName || "";
   const captures = selectedPlayer
     ? data.captures.filter((pokemon) => pokemon.playerId === selectedPlayer.id)
     : [];
@@ -278,7 +282,7 @@ async function StagesContent({ query }: { query: string }) {
           searchValues: [player.displayName, player.username],
           secondaryLabel: `@${player.username}`,
         }))}
-        query={selectedQuery}
+        query={query}
         resetHref="/tramos"
       />
 
@@ -288,7 +292,7 @@ async function StagesContent({ query }: { query: string }) {
             ? `${selectedPlayer.gameTrainerName || selectedPlayer.displayName} todavía no tiene Pokémon registrados.`
             : query
               ? `No se encontró ningún jugador que coincida con «${query}».`
-              : "No se encontró el jugador Zigurath."}
+              : "No se encontró un jugador predeterminado para mostrar."}
         </p>
       ) : (
       <ol className="space-y-4">

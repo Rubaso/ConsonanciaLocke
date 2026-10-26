@@ -89,7 +89,7 @@ export default function PlayerFilter({
             {suggestions.map((player) => (
               <li key={player.id}>
                 <Link
-                  className="flex items-center justify-between gap-3 rounded-md px-3 py-2 text-sm text-zinc-200 transition hover:bg-cyan-950/70 hover:text-cyan-100 focus-visible:bg-cyan-950/70 focus-visible:outline-none"
+                  className="flex w-full items-center justify-between gap-3 rounded-md px-3 py-2 text-left text-sm text-zinc-200 transition hover:bg-cyan-950/70 hover:text-cyan-100 focus-visible:bg-cyan-950/70 focus-visible:outline-none"
                   href={`${resetHref}?player=${encodeURIComponent(player.name)}`}
                   onClick={() => setIsOpen(false)}
                   prefetch={false}
