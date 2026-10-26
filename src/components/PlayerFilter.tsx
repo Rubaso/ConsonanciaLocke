@@ -7,6 +7,8 @@ import { normalizePlayerSearchText } from "@/lib/player-search";
 export type PlayerFilterOption = {
   id: string;
   name: string;
+  searchValues?: string[];
+  secondaryLabel?: string;
 };
 
 export default function PlayerFilter({
@@ -25,7 +27,9 @@ export default function PlayerFilter({
     if (!normalizedValue) return players;
 
     return players.filter((player) =>
-      normalizePlayerSearchText(player.name).includes(normalizedValue),
+      [player.name, ...(player.searchValues ?? [])].some((value) =>
+        normalizePlayerSearchText(value).includes(normalizedValue),
+      ),
     );
   }, [players, value]);
 
@@ -66,7 +70,12 @@ export default function PlayerFilter({
                   href={`${resetHref}?player=${encodeURIComponent(player.name)}`}
                   onClick={() => setIsOpen(false)}
                 >
-                  {player.name}
+                  <span>{player.name}</span>
+                  {player.secondaryLabel && (
+                    <span className="ml-2 text-xs text-zinc-500">
+                      {player.secondaryLabel}
+                    </span>
+                  )}
                 </Link>
               </li>
             ))}

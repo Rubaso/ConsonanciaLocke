@@ -195,20 +195,24 @@ async function StagesContent({ query }: { query: string }) {
   const listedRoutes = data.routes.filter(
     (route) => route.name !== "Centro Pokémon",
   );
-  const matchingPlayerIds = new Set(
-    data.players
-      .filter((player) =>
-        matchesPlayerSearch(query, [
-          player.gameTrainerName,
-          player.displayName,
-          player.username,
-        ]),
-      )
-      .map((player) => player.id),
-  );
-  const captures = query
-    ? data.captures.filter((pokemon) => matchingPlayerIds.has(pokemon.playerId))
-    : data.captures;
+  const selectedPlayer =
+    query
+      ? data.players.find((player) =>
+          matchesPlayerSearch(query, [
+            player.gameTrainerName,
+            player.displayName,
+            player.username,
+          ]),
+        )
+      : data.players.find((player) =>
+          [player.gameTrainerName, player.displayName, player.username].some(
+            (value) => value?.toLocaleLowerCase("es").startsWith("zigurath"),
+          ),
+        );
+  const selectedQuery = query || selectedPlayer?.gameTrainerName || selectedPlayer?.displayName || "";
+  const captures = selectedPlayer
+    ? data.captures.filter((pokemon) => pokemon.playerId === selectedPlayer.id)
+    : [];
   const assignedCaptureIds = new Set<string>();
   const renderedStages = ROUTE_STAGES.map((stage) => {
     const stageCaptures = captures
@@ -271,14 +275,20 @@ async function StagesContent({ query }: { query: string }) {
         players={data.players.map((player) => ({
           id: player.id,
           name: player.gameTrainerName || player.displayName,
+          searchValues: [player.displayName, player.username],
+          secondaryLabel: `@${player.username}`,
         }))}
-        query={query}
+        query={selectedQuery}
         resetHref="/tramos"
       />
 
-      {query && captures.length === 0 ? (
+      {captures.length === 0 ? (
         <p className="rounded-xl border border-zinc-800 bg-zinc-950/70 px-5 py-8 text-center text-sm text-zinc-400">
-          No hay Pokémon que coincidan con «{query}».
+          {selectedPlayer
+            ? `${selectedPlayer.gameTrainerName || selectedPlayer.displayName} todavía no tiene Pokémon registrados.`
+            : query
+              ? `No se encontró ningún jugador que coincida con «${query}».`
+              : "No se encontró el jugador Zigurath."}
         </p>
       ) : (
       <ol className="space-y-4">
