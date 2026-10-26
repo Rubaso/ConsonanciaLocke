@@ -12,7 +12,7 @@ type BackgroundPokemon = {
 };
 
 function createBackgroundPokemon(): BackgroundPokemon[] {
-  const cells = Array.from({ length: 11 }, (_, index) => index);
+  const cells = Array.from({ length: 13 }, (_, index) => index);
   const pokemonIds = Array.from({ length: 151 }, (_, index) => index + 1);
   const columns = 4;
   const rows = Math.ceil(cells.length / columns);
@@ -57,7 +57,7 @@ export default function AmbientGlyphs() {
       {pokemon.map((item, index) => (
         <span
           key={item.id}
-          className={`ambient-pokemon ambient-pokemon-float-${index % 4}`}
+          className={`ambient-pokemon ambient-pokemon-float-${index % 6}`}
           style={{
             left: item.left,
             top: item.top,

@@ -78,6 +78,14 @@ body::before {
   animation: ambient-float-d 22s ease-in-out infinite alternate;
 }
 
+.ambient-pokemon-float-4 {
+  animation: ambient-float-e 20s ease-in-out infinite alternate;
+}
+
+.ambient-pokemon-float-5 {
+  animation: ambient-float-f 23s ease-in-out infinite alternate;
+}
+
 @keyframes ambient-float-a {
   to {
     transform: translate3d(58px, -46px, 0) rotate(18deg);
@@ -99,6 +107,18 @@ body::before {
 @keyframes ambient-float-d {
   to {
     transform: translate3d(-54px, -44px, 0) rotate(17deg);
+  }
+}
+
+@keyframes ambient-float-e {
+  to {
+    transform: translate3d(38px, 56px, 0) rotate(-12deg);
+  }
+}
+
+@keyframes ambient-float-f {
+  to {
+    transform: translate3d(-42px, -52px, 0) rotate(14deg);
   }
 }
 
