@@ -291,7 +291,7 @@ export default function PlayerSettingsForm({
         <div>
           <h2 className="text-sm font-bold text-rose-200">Reiniciar partida</h2>
           <p className="mt-1 text-xs leading-relaxed text-rose-100/70">
-            Se borrarán todos tus Pokémon, medallas y eventos de actividad, y el nombre de entrenador importado del save. La cuenta, los ajustes del perfil y el historial del torneo se conservarán. Esta acción no se puede deshacer.
+            Se borrarán todos tus Pokémon, medallas y eventos de actividad, y el nombre de entrenador importado del save. La cuenta, los ajustes del perfil y el historial del torneo se conservarán. Esta acción no se puede deshacer. (Esto significa que has perdido todos tus Pokémon, tanto del equipo como de la caja de vivos).
           </p>
         </div>
         {wipeError && (
