@@ -86,7 +86,7 @@ function formatActivityEvent(event: ActivityEvent) {
               : "",
         description: (
           <>
-            <strong className="font-semibold text-teal-300">
+            <strong className="font-semibold" style={{ color: event.playerColor }}>
               {event.playerName}
             </strong>{" "}
             {event.captureSource === "trade"
@@ -106,7 +106,7 @@ function formatActivityEvent(event: ActivityEvent) {
         label: "BAJA",
         description: (
           <>
-            <strong className="font-semibold text-teal-300">
+            <strong className="font-semibold" style={{ color: event.playerColor }}>
               {event.playerName}
             </strong>
             {" perdió a "}
