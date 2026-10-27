@@ -74,12 +74,23 @@ function PlayerCard({
               </span>
             )}
             <div className="min-w-0">
-              <h3
-                className="truncate font-semibold"
-                style={{ color: player.color }}
-              >
-                {player.gameTrainerName || player.displayName}
-              </h3>
+              <div className="flex min-w-0 items-center gap-2">
+                <h3
+                  className="truncate font-semibold"
+                  style={{ color: player.color }}
+                >
+                  {player.gameTrainerName || player.displayName}
+                </h3>
+                <span
+                  className={`inline-flex shrink-0 rounded-sm border px-2.5 py-1 text-[10px] font-black uppercase tracking-wide ${
+                    player.challengeMode === "BELLELOKE"
+                      ? "border-violet-300/30 bg-violet-400/10 text-violet-200"
+                      : "border-red-300/30 bg-red-400/10 text-red-200"
+                  }`}
+                >
+                  {player.challengeMode}
+                </span>
+              </div>
               <p className="truncate text-xs text-zinc-500">@{player.username}</p>
             </div>
           </div>

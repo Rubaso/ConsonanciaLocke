@@ -15,6 +15,7 @@ export type PlayerCardData = {
   username: string;
   displayName: string;
   gameTrainerName: string | null;
+  challengeMode: "BELLELOKE" | "HARDLOCKE";
   twitchUsername: string | null;
   trainerSprite: string | null;
   isLive: boolean;
@@ -74,6 +75,10 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
+function isChallengeMode(value: unknown): value is "BELLELOKE" | "HARDLOCKE" {
+  return value === "BELLELOKE" || value === "HARDLOCKE";
+}
+
 function parsePlayers(value: unknown) {
   if (!Array.isArray(value)) {
     throw new Error("Supabase returned an invalid players response");
@@ -86,6 +91,7 @@ function parsePlayers(value: unknown) {
       typeof item.username !== "string" ||
       typeof item.display_name !== "string" ||
       !(typeof item.game_trainer_name === "string" || item.game_trainer_name === null) ||
+      !isChallengeMode(item.challenge_mode) ||
       !(typeof item.twitch_username === "string" || item.twitch_username === null) ||
       !(typeof item.trainer_sprite === "string" || item.trainer_sprite === null) ||
       (item.trainer_sprite !== null && !isTrainerSpriteName(item.trainer_sprite)) ||
@@ -100,6 +106,7 @@ function parsePlayers(value: unknown) {
       username: item.username,
       displayName: item.display_name,
       gameTrainerName: item.game_trainer_name,
+      challengeMode: item.challenge_mode,
       twitchUsername: item.twitch_username,
       trainerSprite: item.trainer_sprite,
       color: item.color,
@@ -263,7 +270,7 @@ export async function getPlayersPageData(): Promise<PlayersPageData> {
   const supabase = createSupabaseAdminClient();
   const playersResponse = await supabase
     .from("players")
-    .select("id,username,display_name,game_trainer_name,twitch_username,trainer_sprite,color")
+    .select("id,username,display_name,game_trainer_name,challenge_mode,twitch_username,trainer_sprite,color")
     .eq("is_active", true)
     .order("display_name", { ascending: true })
     .limit(40);
