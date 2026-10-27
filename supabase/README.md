@@ -35,6 +35,7 @@ Apply these files in order to the **new Consonancia project**:
 26. `20261026132000_authentication_retry_30_seconds.sql`
 27. `20261026190000_player_game_data_wipe.sql`
 28. `20261027010000_player_challenge_mode.sql`
+29. `20261027012200_tencachy_trainer_sprite.sql`
 
 The initial migration creates 13 tables for player accounts and sessions,
 login throttling, the save-derived route catalog, Pokémon and moves, five
@@ -133,6 +134,7 @@ The twenty-eighth migration manually assigns the `BELLELOKE` challenge label to
 the players with usernames `shiro`, `titosanti`, `evarathz`, and `pokecartas`.
 All other current and future players default to `HARDLOCKE`. The label is
 independent of save imports and appears on each player card.
+The twenty-ninth migration assigns TENCACHY's custom trainer sprite.
 
 ## Security
 

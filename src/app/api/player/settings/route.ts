@@ -104,6 +104,15 @@ export async function PATCH(request: Request) {
   if (!player) {
     return NextResponse.json({ error: "Inicia sesión para guardar tus ajustes." }, { status: 401 });
   }
+  if (
+    body.trainerSprite === "TENCACHY" &&
+    player.username.toLowerCase() !== "tencachy"
+  ) {
+    return NextResponse.json(
+      { error: "Este personaje está reservado para su jugador." },
+      { status: 400 },
+    );
+  }
 
   const supabase = createSupabaseAdminClient();
   const response = await supabase
