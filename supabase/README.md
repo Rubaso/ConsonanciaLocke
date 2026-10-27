@@ -36,6 +36,7 @@ Apply these files in order to the **new Consonancia project**:
 27. `20261026190000_player_game_data_wipe.sql`
 28. `20261027010000_player_challenge_mode.sql`
 29. `20261027012200_tencachy_trainer_sprite.sql`
+30. `20261027012500_repair_save_import_and_challenge_mode.sql`
 
 The initial migration creates 13 tables for player accounts and sessions,
 login throttling, the save-derived route catalog, Pokémon and moves, five
@@ -135,6 +136,9 @@ the players with usernames `shiro`, `titosanti`, `evarathz`, and `pokecartas`.
 All other current and future players default to `HARDLOCKE`. The label is
 independent of save imports and appears on each player card.
 The twenty-ninth migration assigns TENCACHY's custom trainer sprite.
+The thirtieth migration repairs save imports if the obsolete automatic game
+mode migration was applied. It restores the four-argument import RPC, removes
+the obsolete game-mode column, and ensures the manual challenge labels exist.
 
 ## Security
 
