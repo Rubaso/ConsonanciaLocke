@@ -314,6 +314,7 @@ export async function getPlayersPageData(): Promise<PlayersPageData> {
           )
           .in("player_id", playerIds)
           .eq("status", "alive")
+          .eq("present_in_save", true)
           .not("team_position", "is", null)
           .order("team_position", { ascending: true }),
       ]);
@@ -409,6 +410,7 @@ export async function getPlayerBoxPageData(
           "id,species,form,nickname,level,ability,is_shiny,status,origin_name,death_area,team_position,created_at",
         )
         .eq("player_id", player.id)
+        .eq("present_in_save", true)
         .order("team_position", { ascending: true, nullsFirst: false })
         .order("created_at", { ascending: true })
         .order("id", { ascending: true })

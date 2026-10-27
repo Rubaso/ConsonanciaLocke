@@ -188,6 +188,7 @@ export async function getStagePageData(): Promise<StagePageData> {
         .select(
           "id,player_id,species,form,nickname,ability,status,is_shiny,route_id,obtain_method,origin_map_id,origin_name",
         )
+        .eq("present_in_save", true)
         .order("created_at", { ascending: true })
         .order("id", { ascending: true })
         .range(offset, offset + pageSize - 1);
