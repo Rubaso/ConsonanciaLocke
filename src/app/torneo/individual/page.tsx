@@ -40,7 +40,7 @@ async function IndividualMatchesContent() {
     <div className="space-y-6">
       <header className="space-y-2">
         <Link className="text-xs font-semibold text-cyan-300 hover:text-cyan-100" href="/torneo">
-          ← Combates y torneo
+          ← Competición
         </Link>
         <p className="text-xs font-bold uppercase tracking-[0.2em] text-cyan-300">
           individuales · Rondas

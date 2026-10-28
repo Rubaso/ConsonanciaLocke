@@ -16,7 +16,7 @@ const navigation = [
   { href: "/", label: "Inicio" },
   { href: "/jugadores", label: "Jugadores" },
   { href: "/tramos", label: "Tramos" },
-  { href: "/torneo", label: "Torneo" },
+  { href: "/torneo", label: "Competición", aliases: ["/pesca", "/bajitos"] },
   {
     href: "https://docs.google.com/document/d/1KGtqzycVF-ue7uHrjDxIlUxUxm-KOnCyLWBNYpu51f4/edit?tab=t.0",
     label: "Normas",
@@ -206,10 +206,14 @@ export default function SiteHeader() {
                 );
               }
 
+              const prefixes = [item.href, ...(("aliases" in item && item.aliases) || [])];
               const active =
                 hasMounted &&
-                (pathname === item.href ||
-                  (item.href !== "/" && pathname.startsWith(`${item.href}/`)));
+                prefixes.some(
+                  (href) =>
+                    pathname === href ||
+                    (href !== "/" && pathname.startsWith(`${href}/`)),
+                );
 
               return (
                 <Link

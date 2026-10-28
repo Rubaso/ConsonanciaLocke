@@ -1,8 +1,8 @@
 import Link from "next/link";
 
 export const metadata = {
-  title: "Torneo | EKLOCKE",
-  description: "Combates individuales y torneos de Pokémon Consonancia.",
+  title: "Competición | EKLOCKE",
+  description: "Combates, torneo y concursos de Pokémon Consonancia.",
 };
 
 const sections = [
@@ -15,12 +15,45 @@ const sections = [
   },
   {
     href: "/torneo/cuadro",
-    eyebrow: "Competición",
+    eyebrow: "Eliminatorias",
     title: "Torneo",
-    description: "Eliminatorias, participantes y avance del torneo.",
+    description: "Cuadro, participantes y avance del torneo.",
     tone: "amber",
   },
+  {
+    href: "/pesca",
+    eyebrow: "Concurso",
+    title: "Concurso de pesca",
+    description: "Clasificación por peso, clips y pesca activa de la partida.",
+    tone: "teal",
+  },
+  {
+    href: "/bajitos",
+    eyebrow: "Concurso",
+    title: "Concurso de bajitos",
+    description: "Clasificación por altura, clips y Pokémon más bajos de la partida.",
+    tone: "fuchsia",
+  },
 ] as const;
+
+const toneClass = {
+  cyan: {
+    card: "border-cyan-300/20 hover:border-cyan-200/50 hover:shadow-[0_0_28px_rgba(34,211,238,0.12)]",
+    eyebrow: "text-cyan-300",
+  },
+  amber: {
+    card: "border-amber-300/20 hover:border-amber-200/50 hover:shadow-[0_0_28px_rgba(251,191,36,0.12)]",
+    eyebrow: "text-amber-300",
+  },
+  teal: {
+    card: "border-teal-300/20 hover:border-teal-200/50 hover:shadow-[0_0_28px_rgba(45,212,191,0.12)]",
+    eyebrow: "text-teal-300",
+  },
+  fuchsia: {
+    card: "border-fuchsia-300/20 hover:border-fuchsia-200/50 hover:shadow-[0_0_28px_rgba(232,121,249,0.12)]",
+    eyebrow: "text-fuchsia-300",
+  },
+} as const;
 
 export default function TournamentHomePage() {
   return (
@@ -30,28 +63,22 @@ export default function TournamentHomePage() {
           Pokémon Consonancia by EK esports
         </p>
         <h1 className="text-3xl font-black tracking-tight text-zinc-100">
-          Combates y torneo
+          Competición
         </h1>
         <p className="text-sm text-zinc-400">
-          Elige la sección del evento que quieres consultar.
+          Combates, torneo y concursos.
         </p>
       </header>
 
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {sections.map((section) => (
           <Link
-            className={`group rounded-2xl border bg-slate-950/70 p-6 transition duration-200 hover:-translate-y-1 hover:bg-slate-900/80 ${
-              section.tone === "cyan"
-                ? "border-cyan-300/20 hover:border-cyan-200/50 hover:shadow-[0_0_28px_rgba(34,211,238,0.12)]"
-                : "border-amber-300/20 hover:border-amber-200/50 hover:shadow-[0_0_28px_rgba(251,191,36,0.12)]"
-            }`}
+            className={`group rounded-2xl border bg-slate-950/70 p-6 transition duration-200 hover:-translate-y-1 hover:bg-slate-900/80 ${toneClass[section.tone].card}`}
             href={section.href}
             key={section.href}
           >
             <p
-              className={`text-[10px] font-bold uppercase tracking-[0.2em] ${
-                section.tone === "cyan" ? "text-cyan-300" : "text-amber-300"
-              }`}
+              className={`text-[10px] font-bold uppercase tracking-[0.2em] ${toneClass[section.tone].eyebrow}`}
             >
               {section.eyebrow}
             </p>

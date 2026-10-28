@@ -32,7 +32,7 @@ async function TournamentBracketContent() {
     <div className="space-y-6">
       <header className="space-y-2">
         <Link className="text-xs font-semibold text-amber-300 hover:text-amber-100" href="/torneo">
-          ← Combates y torneo
+          ← Competición
         </Link>
         <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-300">
           Torneo gordo · Competición

@@ -16,6 +16,7 @@ import PlayerPokepasteProfile from "@/components/PlayerPokepasteProfile";
 import { getPlayerPokepasteProfile } from "@/lib/supabase/player-pokepaste-profile";
 import PokemonSprite from "@/components/PokemonSprite";
 import { getRecentShinyAnnouncements } from "@/lib/supabase/shiny-announcement";
+import { isContestResultsBannerVisible } from "@/lib/contest-results";
 
 async function ActivitySection() {
   await connection();
@@ -307,7 +308,7 @@ async function TournamentBanner() {
   return (
     <Link
       href="/torneo/cuadro"
-      className="group relative isolate flex min-h-32 w-full max-w-3xl items-end overflow-hidden rounded-2xl border border-amber-300/50 bg-zinc-950 p-4 outline-none transition-all duration-300 hover:border-amber-200 hover:shadow-[0_0_22px_rgba(251,191,36,0.35)] focus-visible:ring-2 focus-visible:ring-amber-300 sm:min-h-36 sm:p-5"
+      className="group relative isolate flex min-h-32 w-full items-end overflow-hidden rounded-2xl border border-amber-300/50 bg-zinc-950 p-4 outline-none transition-all duration-300 hover:border-amber-200 hover:shadow-[0_0_22px_rgba(251,191,36,0.35)] focus-visible:ring-2 focus-visible:ring-amber-300 sm:min-h-40 sm:p-5"
       aria-label="Ir al cuadro del torneo de Consonancia"
     >
       <div
@@ -323,12 +324,236 @@ async function TournamentBanner() {
       />
       <div className="relative z-10 transition-transform duration-300 group-hover:translate-x-1 group-focus-visible:translate-x-1">
         <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-amber-300">
-          Consonancia · Torneo
+          Torneo
         </p>
         <h2 className="mt-1 text-xl font-black tracking-tight text-white sm:text-2xl">
           Torneo de Consonancia
         </h2>
         <p className="mt-1 text-xs font-medium text-zinc-200">Torneo activo</p>
+      </div>
+    </Link>
+  );
+}
+
+async function FishingContestBanner() {
+  await connection();
+  const configuration = getSupabaseConfiguration();
+  if (configuration.status !== "configured") return null;
+
+  const supabase = createSupabaseAdminClient();
+  const activeResponse = await supabase
+    .from("fishing_contests")
+    .select("id,ended_at,status")
+    .eq("status", "active")
+    .limit(1);
+
+  if (activeResponse.error) {
+    console.error(
+      "Failed to check active fishing contest:",
+      activeResponse.error.message,
+    );
+    return null;
+  }
+
+  if ((activeResponse.data ?? []).length > 0) {
+    let player;
+    try {
+      player = await getCurrentPlayer();
+    } catch {
+      return null;
+    }
+    if (!player) return null;
+
+    return (
+      <Link
+        href="/pesca/elegir"
+        className="group relative isolate flex min-h-32 w-full items-end overflow-hidden rounded-2xl border border-cyan-300/50 bg-zinc-950 p-4 outline-none transition-all duration-300 hover:border-cyan-200 hover:shadow-[0_0_22px_rgba(34,211,238,0.35)] focus-visible:ring-2 focus-visible:ring-cyan-300 sm:min-h-40 sm:p-5"
+        aria-label="Elige tu pesca para el concurso"
+      >
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 z-0 bg-cover bg-[center_30%] transition-transform duration-700 ease-out group-hover:scale-110 group-focus-visible:scale-110"
+          style={{
+            backgroundImage: "url('/FondoPesca/ash-goh-pescando.png')",
+          }}
+        />
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 z-0 bg-gradient-to-r from-zinc-950/95 via-cyan-950/55 to-zinc-950/10 transition-colors duration-300 group-hover:from-zinc-950/90 group-hover:via-cyan-950/45"
+        />
+        <div className="relative z-10 transition-transform duration-300 group-hover:translate-x-1 group-focus-visible:translate-x-1">
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-cyan-300">
+            Pesca
+          </p>
+          <h2 className="mt-1 text-xl font-black tracking-tight text-white sm:text-2xl">
+            ELIGE TU PESCA
+          </h2>
+          <p className="mt-1 text-xs font-medium text-zinc-200">
+            Concurso activo · elige Pokémon y clip
+          </p>
+        </div>
+      </Link>
+    );
+  }
+
+  const endedResponse = await supabase
+    .from("fishing_contests")
+    .select("id,ended_at,status")
+    .eq("status", "ended")
+    .order("ended_at", { ascending: false, nullsFirst: false })
+    .limit(1);
+
+  if (endedResponse.error) {
+    console.error(
+      "Failed to check ended fishing contest:",
+      endedResponse.error.message,
+    );
+    return null;
+  }
+  const ended = endedResponse.data?.[0];
+  if (!ended || !isContestResultsBannerVisible(ended.ended_at)) return null;
+
+  return (
+    <Link
+      href="/pesca"
+      className="group relative isolate flex min-h-16 w-full items-center overflow-hidden rounded-xl border border-cyan-300/40 bg-zinc-950 px-4 py-3 outline-none transition-all duration-300 hover:border-cyan-200 hover:shadow-[0_0_16px_rgba(34,211,238,0.25)] focus-visible:ring-2 focus-visible:ring-cyan-300 sm:min-h-20 sm:px-5"
+      aria-label="Ver resultados del concurso de pesca"
+    >
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 z-0 bg-cover bg-[center_30%]"
+        style={{
+          backgroundImage: "url('/FondoPesca/ash-goh-pescando.png')",
+        }}
+      />
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 z-0 bg-gradient-to-r from-zinc-950/95 via-cyan-950/60 to-zinc-950/20"
+      />
+      <div className="relative z-10 flex w-full items-center justify-between gap-3">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-cyan-300">
+            Pesca
+          </p>
+          <h2 className="mt-0.5 text-base font-black tracking-tight text-white sm:text-lg">
+            Ver resultados
+          </h2>
+        </div>
+        <span className="rounded-lg border border-cyan-200/40 bg-cyan-300/15 px-3 py-1.5 text-[11px] font-black uppercase tracking-wide text-cyan-50">
+          Clasificación
+        </span>
+      </div>
+    </Link>
+  );
+}
+
+async function ShortContestBanner() {
+  await connection();
+  const configuration = getSupabaseConfiguration();
+  if (configuration.status !== "configured") return null;
+
+  const supabase = createSupabaseAdminClient();
+  const activeResponse = await supabase
+    .from("short_contests")
+    .select("id,ended_at,status")
+    .eq("status", "active")
+    .limit(1);
+
+  if (activeResponse.error) {
+    console.error(
+      "Failed to check active short contest:",
+      activeResponse.error.message,
+    );
+    return null;
+  }
+
+  if ((activeResponse.data ?? []).length > 0) {
+    let player;
+    try {
+      player = await getCurrentPlayer();
+    } catch {
+      return null;
+    }
+    if (!player) return null;
+
+    return (
+      <Link
+        href="/bajitos/elegir"
+        className="group relative isolate flex min-h-32 w-full items-end overflow-hidden rounded-2xl border border-fuchsia-300/50 bg-zinc-950 p-4 outline-none transition-all duration-300 hover:border-fuchsia-200 hover:shadow-[0_0_22px_rgba(232,121,249,0.35)] focus-visible:ring-2 focus-visible:ring-fuchsia-300 sm:min-h-40 sm:p-5"
+        aria-label="Elige tu bajito para el concurso"
+      >
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 z-0 bg-cover bg-[center_48%] transition-transform duration-700 ease-out group-hover:scale-110 group-focus-visible:scale-110"
+          style={{
+            backgroundImage: "url('/FondoBajitos/flabebe-prado.png')",
+          }}
+        />
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 z-0 bg-gradient-to-r from-zinc-950/95 via-fuchsia-950/50 to-zinc-950/10 transition-colors duration-300 group-hover:from-zinc-950/90 group-hover:via-fuchsia-950/40"
+        />
+        <div className="relative z-10 transition-transform duration-300 group-hover:translate-x-1 group-focus-visible:translate-x-1">
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-fuchsia-300">
+            Bajitos
+          </p>
+          <h2 className="mt-1 text-xl font-black tracking-tight text-white sm:text-2xl">
+            ELIGE TU BAJITO
+          </h2>
+          <p className="mt-1 text-xs font-medium text-zinc-200">
+            Concurso activo · elige Pokémon y clip
+          </p>
+        </div>
+      </Link>
+    );
+  }
+
+  const endedResponse = await supabase
+    .from("short_contests")
+    .select("id,ended_at,status")
+    .eq("status", "ended")
+    .order("ended_at", { ascending: false, nullsFirst: false })
+    .limit(1);
+
+  if (endedResponse.error) {
+    console.error(
+      "Failed to check ended short contest:",
+      endedResponse.error.message,
+    );
+    return null;
+  }
+  const ended = endedResponse.data?.[0];
+  if (!ended || !isContestResultsBannerVisible(ended.ended_at)) return null;
+
+  return (
+    <Link
+      href="/bajitos"
+      className="group relative isolate flex min-h-16 w-full items-center overflow-hidden rounded-xl border border-fuchsia-300/40 bg-zinc-950 px-4 py-3 outline-none transition-all duration-300 hover:border-fuchsia-200 hover:shadow-[0_0_16px_rgba(232,121,249,0.25)] focus-visible:ring-2 focus-visible:ring-fuchsia-300 sm:min-h-20 sm:px-5"
+      aria-label="Ver resultados del concurso de bajitos"
+    >
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 z-0 bg-cover bg-[center_48%]"
+        style={{
+          backgroundImage: "url('/FondoBajitos/flabebe-prado.png')",
+        }}
+      />
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 z-0 bg-gradient-to-r from-zinc-950/95 via-fuchsia-950/55 to-zinc-950/20"
+      />
+      <div className="relative z-10 flex w-full items-center justify-between gap-3">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-fuchsia-300">
+            Bajitos
+          </p>
+          <h2 className="mt-0.5 text-base font-black tracking-tight text-white sm:text-lg">
+            Ver resultados
+          </h2>
+        </div>
+        <span className="rounded-lg border border-fuchsia-200/40 bg-fuchsia-300/15 px-3 py-1.5 text-[11px] font-black uppercase tracking-wide text-fuchsia-50">
+          Clasificación
+        </span>
       </div>
     </Link>
   );
@@ -351,6 +576,14 @@ export default function Home() {
 
       <Suspense fallback={null}>
         <TournamentBanner />
+      </Suspense>
+
+      <Suspense fallback={null}>
+        <FishingContestBanner />
+      </Suspense>
+
+      <Suspense fallback={null}>
+        <ShortContestBanner />
       </Suspense>
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(360px,0.9fr)]">
