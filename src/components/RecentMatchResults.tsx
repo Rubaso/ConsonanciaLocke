@@ -1,4 +1,3 @@
-import ShowdownReplayLink from "@/components/ShowdownReplayLink";
 import type { RecentMatchResult } from "@/lib/supabase/recent-match-results";
 
 export default function RecentMatchResults({ results }: { results: RecentMatchResult[] }) {
@@ -28,7 +27,19 @@ export default function RecentMatchResults({ results }: { results: RecentMatchRe
                 {". Ganó "}
                 <span className="font-bold text-amber-100">{result.winnerName}</span>
               </p>
-              <ShowdownReplayLink url={result.replayUrl} />
+              <div className="flex flex-wrap items-center justify-end gap-1.5">
+                {result.replayUrls.map((url, index) => (
+                  <a
+                    className="rounded-md border border-sky-300/30 px-2 py-1 text-[10px] font-bold text-sky-100 hover:bg-sky-300/10"
+                    href={url}
+                    key={`${result.id}-${index}`}
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    Combate {index + 1}
+                  </a>
+                ))}
+              </div>
             </li>
           ))}
         </ul>

@@ -1,8 +1,7 @@
 import { Suspense, type ReactNode } from "react";
 import Link from "next/link";
 import { connection } from "next/server";
-import MatchReplayEditor from "@/components/MatchReplayEditor";
-import ShowdownReplayLink from "@/components/ShowdownReplayLink";
+import HistoryMatchReplays from "@/components/HistoryMatchReplays";
 import { getCurrentPlayer } from "@/lib/auth";
 import { getIndividualCombatHistoryData } from "@/lib/supabase/competition-history-data";
 
@@ -79,21 +78,27 @@ async function IndividualHistoryContent() {
                         {match.playerBName}
                       </span>
                     </p>
-                    <div className="mt-2 space-y-1">
+                    <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
                       <p className="text-[10px] text-zinc-500">
                         {match.winnerName ? `Ganador: ${match.winnerName}` : "Sin ganador"}
                         {match.completedAt
                           ? ` · ${dateFormatter.format(new Date(match.completedAt))}`
                           : ""}
                       </p>
-                      {player &&
-                      (player.role === "organizer" ||
-                        player.id === match.playerAId ||
-                        player.id === match.playerBId) ? (
-                        <MatchReplayEditor compact initialUrl={match.replayUrl} matchId={match.id} />
-                      ) : (
-                        <ShowdownReplayLink url={match.replayUrl} />
-                      )}
+                      <HistoryMatchReplays
+                        canEdit={Boolean(
+                          player &&
+                            (player.role === "organizer" ||
+                              player.id === match.playerAId ||
+                              player.id === match.playerBId),
+                        )}
+                        matchId={match.id}
+                        playerAId={match.playerAId}
+                        playerAName={match.playerAName}
+                        playerBId={match.playerBId}
+                        playerBName={match.playerBName}
+                        urls={match.replayUrls}
+                      />
                     </div>
                   </article>
                 ))}
@@ -132,18 +137,24 @@ async function IndividualHistoryContent() {
                         {match.playerBName}
                       </span>
                     </p>
-                    <div className="mt-2 space-y-1">
+                    <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
                       <p className="text-[10px] text-zinc-500">
                         {match.winnerName ? `Ganador: ${match.winnerName}` : "Sin resultado"}
                       </p>
-                      {player &&
-                      (player.role === "organizer" ||
-                        player.id === match.playerAId ||
-                        player.id === match.playerBId) ? (
-                        <MatchReplayEditor compact initialUrl={match.replayUrl} matchId={match.id} />
-                      ) : (
-                        <ShowdownReplayLink url={match.replayUrl} />
-                      )}
+                      <HistoryMatchReplays
+                        canEdit={Boolean(
+                          player &&
+                            (player.role === "organizer" ||
+                              player.id === match.playerAId ||
+                              player.id === match.playerBId),
+                        )}
+                        matchId={match.id}
+                        playerAId={match.playerAId}
+                        playerAName={match.playerAName}
+                        playerBId={match.playerBId}
+                        playerBName={match.playerBName}
+                        urls={match.replayUrls}
+                      />
                     </div>
                   </div>
                 ))}

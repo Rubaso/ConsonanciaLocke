@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
-import MatchReplayEditor from "@/components/MatchReplayEditor";
+import MatchResultsModal from "@/components/MatchResultsModal";
 import TournamentBracket from "@/components/TournamentBracket";
 
 type TournamentPlayer = {
@@ -19,7 +19,7 @@ type TournamentMatch = {
   playerBId: string | null;
   winnerPlayerId: string | null;
   status: "pending" | "completed" | "bye" | "forfeit";
-  replayUrl: string | null;
+  replayUrls: string[];
 };
 
 export type TournamentSummary = {
@@ -39,7 +39,7 @@ export type IndividualMatchSummary = {
   playerBId: string;
   winnerPlayerId: string | null;
   status: "draft" | "pending" | "completed" | "forfeit" | "cancelled";
-  replayUrl: string | null;
+  replayUrls: string[];
 };
 
 type ActivePlayer = TournamentPlayer;
@@ -109,6 +109,16 @@ export default function TournamentManager({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [resultsTarget, setResultsTarget] = useState<{
+    matchId: string;
+    playerAId: string;
+    playerAName: string;
+    playerBId: string;
+    playerBName: string;
+    winnerPlayerId: string | null;
+    replayUrls: string[];
+    winnerAction: "individual-winner" | "winner";
+  } | null>(null);
 
   async function createIndividualMatch() {
     setBusy(true);
@@ -517,28 +527,25 @@ export default function TournamentManager({
                           </p>
                           {match.status !== "cancelled" ? (
                             <div className="flex flex-wrap items-center justify-between gap-2">
-                              <label className="flex min-w-0 flex-1 items-center gap-2 text-[10px] text-zinc-500">
-                                Ganador
-                                <select
-                                  className="min-w-0 flex-1 rounded border border-zinc-700 bg-zinc-950 px-2 py-1.5 text-xs text-zinc-200"
-                                  disabled={busy}
-                                  value={match.winnerPlayerId ?? ""}
-                                  onChange={(event) => {
-                                    if (event.target.value) {
-                                      void runAction(
-                                        { action: "individual-winner", matchId: match.id, winnerPlayerId: event.target.value },
-                                        match.winnerPlayerId
-                                          ? "Ganador actualizado."
-                                          : "Resultado guardado.",
-                                      );
-                                    }
-                                  }}
-                                >
-                                  <option value="" disabled>Seleccionar ganador</option>
-                                  <option value={match.playerAId}>{getPlayerName(round.players, match.playerAId)}</option>
-                                  <option value={match.playerBId}>{getPlayerName(round.players, match.playerBId)}</option>
-                                </select>
-                              </label>
+                              <button
+                                className="rounded-lg border border-amber-300/35 bg-amber-400/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide text-amber-100 hover:bg-amber-400/20 disabled:opacity-50"
+                                disabled={busy}
+                                onClick={() =>
+                                  setResultsTarget({
+                                    matchId: match.id,
+                                    playerAId: match.playerAId,
+                                    playerAName: getPlayerName(round.players, match.playerAId),
+                                    playerBId: match.playerBId,
+                                    playerBName: getPlayerName(round.players, match.playerBId),
+                                    winnerPlayerId: match.winnerPlayerId,
+                                    replayUrls: match.replayUrls,
+                                    winnerAction: "individual-winner",
+                                  })
+                                }
+                                type="button"
+                              >
+                                Meter resultados
+                              </button>
                               <button
                                 className="rounded border border-rose-300/25 px-2 py-1.5 text-[10px] font-semibold text-rose-200 transition hover:bg-rose-300/10 disabled:opacity-50"
                                 disabled={busy}
@@ -560,7 +567,6 @@ export default function TournamentManager({
                               Cancelado
                             </p>
                           )}
-                          <MatchReplayEditor compact initialUrl={match.replayUrl} matchId={match.id} />
                         </>
                       )}
                     </div>
@@ -587,32 +593,33 @@ export default function TournamentManager({
                     {" vs "}
                     {getPlayerName(activePlayers, match.playerBId)}
                   </p>
-                  <MatchReplayEditor compact initialUrl={match.replayUrl} matchId={match.id} />
+                  {match.winnerPlayerId && (
+                    <p className="mt-1 text-[10px] text-amber-200">
+                      Ganó {getPlayerName(activePlayers, match.winnerPlayerId)}
+                    </p>
+                  )}
                 </div>
                 {match.status !== "cancelled" ? (
                   <div className="flex items-center gap-2">
-                    <label className="flex items-center gap-2 text-[10px] text-zinc-500">
-                      Ganador
-                      <select
-                        className="max-w-40 rounded border border-zinc-700 bg-zinc-950 px-2 py-1.5 text-xs text-zinc-200"
-                        disabled={busy}
-                        value={match.winnerPlayerId ?? ""}
-                        onChange={(event) => {
-                          if (event.target.value) {
-                            void runAction(
-                              { action: "individual-winner", matchId: match.id, winnerPlayerId: event.target.value },
-                              match.winnerPlayerId
-                                ? "Ganador actualizado."
-                                : "Resultado del combate individual guardado.",
-                            );
-                          }
-                        }}
-                      >
-                        <option value="" disabled>Seleccionar ganador</option>
-                        <option value={match.playerAId}>{getPlayerName(activePlayers, match.playerAId)}</option>
-                        <option value={match.playerBId}>{getPlayerName(activePlayers, match.playerBId)}</option>
-                      </select>
-                    </label>
+                    <button
+                      className="rounded-lg border border-amber-300/35 bg-amber-400/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide text-amber-100 hover:bg-amber-400/20 disabled:opacity-50"
+                      disabled={busy}
+                      onClick={() =>
+                        setResultsTarget({
+                          matchId: match.id,
+                          playerAId: match.playerAId,
+                          playerAName: getPlayerName(activePlayers, match.playerAId),
+                          playerBId: match.playerBId,
+                          playerBName: getPlayerName(activePlayers, match.playerBId),
+                          winnerPlayerId: match.winnerPlayerId,
+                          replayUrls: match.replayUrls,
+                          winnerAction: "individual-winner",
+                        })
+                      }
+                      type="button"
+                    >
+                      Meter resultados
+                    </button>
                     <button
                       className="rounded border border-rose-300/25 px-2 py-1.5 text-[10px] font-semibold text-rose-200 transition hover:bg-rose-300/10 disabled:opacity-50"
                       disabled={busy}
@@ -730,6 +737,28 @@ export default function TournamentManager({
             );
           })}
         </div>
+      )}
+
+      {resultsTarget && (
+        <MatchResultsModal
+          busy={busy}
+          initialUrls={resultsTarget.replayUrls}
+          initialWinnerId={resultsTarget.winnerPlayerId}
+          matchId={resultsTarget.matchId}
+          playerAId={resultsTarget.playerAId}
+          playerAName={resultsTarget.playerAName}
+          playerBId={resultsTarget.playerBId}
+          playerBName={resultsTarget.playerBName}
+          winnerAction={resultsTarget.winnerAction}
+          onClose={() => setResultsTarget(null)}
+          onSaveWinner={async (winnerPlayerId) => {
+            await sendOrganizerRequest("PATCH", {
+              action: resultsTarget.winnerAction,
+              matchId: resultsTarget.matchId,
+              winnerPlayerId,
+            });
+          }}
+        />
       )}
     </section>
   );

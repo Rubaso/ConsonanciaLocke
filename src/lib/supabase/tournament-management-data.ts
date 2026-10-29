@@ -1,6 +1,7 @@
 import "server-only";
 
 import { getCurrentPlayer } from "@/lib/auth";
+import { parseReplayUrlsFromRow } from "@/lib/showdown-replay";
 import type {
   IndividualMatchRoundSummary,
   IndividualMatchSummary,
@@ -58,7 +59,7 @@ export async function getTournamentManagementData(): Promise<TournamentManagemen
       : Promise.resolve({ data: [], error: null }),
     supabase
       .from("individual_matches")
-      .select("id,round_id,round_match_number,player_a_id,player_b_id,winner_player_id,status,showdown_replay_url")
+      .select("id,round_id,round_match_number,player_a_id,player_b_id,winner_player_id,status,showdown_replay_url,showdown_replay_url_2,showdown_replay_url_3")
       .in(
         "status",
         isOrganizer
@@ -96,7 +97,7 @@ export async function getTournamentManagementData(): Promise<TournamentManagemen
             .in("tournament_id", tournamentIds),
           supabase
             .from("tournament_matches")
-            .select("id,tournament_id,round_number,match_number,player_a_id,player_b_id,winner_player_id,status,showdown_replay_url")
+            .select("id,tournament_id,round_number,match_number,player_a_id,player_b_id,winner_player_id,status,showdown_replay_url,showdown_replay_url_2,showdown_replay_url_3")
             .in("tournament_id", tournamentIds)
             .order("round_number")
             .order("match_number"),
@@ -166,8 +167,7 @@ export async function getTournamentManagementData(): Promise<TournamentManagemen
         playerBId: match.player_b_id,
         winnerPlayerId: match.winner_player_id,
         status: match.status as TournamentSummary["matches"][number]["status"],
-        replayUrl:
-          typeof match.showdown_replay_url === "string" ? match.showdown_replay_url : null,
+        replayUrls: parseReplayUrlsFromRow(match),
       })),
   }));
 
@@ -180,8 +180,7 @@ export async function getTournamentManagementData(): Promise<TournamentManagemen
       playerBId: match.player_b_id,
       winnerPlayerId: match.winner_player_id,
       status: match.status as IndividualMatchSummary["status"],
-      replayUrl:
-        typeof match.showdown_replay_url === "string" ? match.showdown_replay_url : null,
+      replayUrls: parseReplayUrlsFromRow(match),
     }));
   const individualRounds: IndividualMatchRoundSummary[] =
     (individualRoundsResponse.data ?? []).map((round) => {

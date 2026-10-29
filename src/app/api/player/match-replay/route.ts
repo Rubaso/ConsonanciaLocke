@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import { getCurrentPlayer } from "@/lib/auth";
-import { normalizeShowdownReplayUrl } from "@/lib/showdown-replay";
+import { padReplayUrls, replayUpdatePayload } from "@/lib/showdown-replay";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-const MAX_REQUEST_SIZE = 4 * 1024;
+const MAX_REQUEST_SIZE = 8 * 1024;
 const EDITABLE_INDIVIDUAL_STATUSES = ["draft", "pending", "completed", "forfeit"];
 const EDITABLE_TOURNAMENT_STATUSES = ["pending", "completed", "forfeit"];
 
@@ -18,6 +18,18 @@ function isSameOrigin(request: Request) {
   } catch {
     return false;
   }
+}
+
+function parseUrls(body: Record<string, unknown>) {
+  if (Array.isArray(body.urls)) {
+    return padReplayUrls(
+      body.urls.map((value) => (typeof value === "string" ? value : "")),
+    );
+  }
+  if (typeof body.content === "string") {
+    return padReplayUrls([body.content]);
+  }
+  return null;
 }
 
 export async function PATCH(request: Request) {
@@ -43,16 +55,17 @@ export async function PATCH(request: Request) {
     typeof body !== "object" ||
     body === null ||
     !("matchId" in body) ||
-    !("content" in body) ||
     typeof body.matchId !== "string" ||
-    !UUID_PATTERN.test(body.matchId) ||
-    typeof body.content !== "string"
+    !UUID_PATTERN.test(body.matchId)
   ) {
     return NextResponse.json({ error: "Revisa el enlace." }, { status: 400 });
   }
 
-  const content = normalizeShowdownReplayUrl(body.content);
-  if (content.length > 400) {
+  const urls = parseUrls(body as Record<string, unknown>);
+  if (!urls) {
+    return NextResponse.json({ error: "Revisa el enlace." }, { status: 400 });
+  }
+  if (urls.some((url) => url.length > 400)) {
     return NextResponse.json({ error: "El enlace es demasiado largo." }, { status: 400 });
   }
 
@@ -120,7 +133,7 @@ export async function PATCH(request: Request) {
 
   let updateQuery = supabase
     .from(table)
-    .update({ showdown_replay_url: content || null })
+    .update(replayUpdatePayload(urls))
     .eq("id", body.matchId)
     .in("status", allowedStatuses);
   if (!isOrganizer) {
@@ -142,5 +155,5 @@ export async function PATCH(request: Request) {
     );
   }
 
-  return NextResponse.json({ ok: true, content: content || null });
+  return NextResponse.json({ ok: true, urls, content: urls[0] || null });
 }

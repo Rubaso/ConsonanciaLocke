@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
+import { BO3_SLOT_COUNT, filledReplayUrls, padReplayUrls } from "@/lib/showdown-replay";
 import type { MatchPaste } from "@/lib/supabase/player-match-data";
 
 type Props = {
@@ -19,7 +20,7 @@ type Props = {
   opponentPasteSubmitted: boolean;
   competitionLaunched: boolean;
   pasteLocked: boolean;
-  showdownReplayUrl: string | null;
+  showdownReplayUrls: string[];
 };
 
 const dateFormatter = new Intl.DateTimeFormat("es-ES", {
@@ -43,14 +44,13 @@ export default function PlayerMatchPanel({
   opponentPasteSubmitted,
   competitionLaunched,
   pasteLocked,
-  showdownReplayUrl: initialReplayUrl,
+  showdownReplayUrls: initialReplayUrls,
 }: Props) {
   const router = useRouter();
   const [content, setContent] = useState(initialOwnPaste?.content ?? "");
   const [ownPaste, setOwnPaste] = useState(initialOwnPaste);
   const [hasOwnPaste, setHasOwnPaste] = useState(ownPasteSubmitted);
-  const [replayUrl, setReplayUrl] = useState(initialReplayUrl ?? "");
-  const [savedReplayUrl, setSavedReplayUrl] = useState(initialReplayUrl);
+  const [replayUrls, setReplayUrls] = useState(() => padReplayUrls(initialReplayUrls));
   const [saving, setSaving] = useState(false);
   const [savingReplay, setSavingReplay] = useState(false);
   const [copying, setCopying] = useState(false);
@@ -106,7 +106,7 @@ export default function PlayerMatchPanel({
     }
   }
 
-  async function saveReplay(nextContent: string) {
+  async function saveReplay(nextUrls: [string, string, string]) {
     setSavingReplay(true);
     setError("");
     setNotice("");
@@ -115,19 +115,22 @@ export default function PlayerMatchPanel({
       const response = await fetch("/api/player/match-replay", {
         method: "PATCH",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ matchId, content: nextContent }),
+        body: JSON.stringify({ matchId, urls: nextUrls }),
       });
-      const result = (await response.json()) as { error?: string; ok?: boolean; content?: string | null };
+      const result = (await response.json()) as { error?: string; ok?: boolean; urls?: string[] };
 
       if (!response.ok || !result.ok) {
         setError(result.error ?? "No se pudo guardar el enlace de Showdown.");
         return;
       }
 
-      const trimmed = nextContent.trim();
-      setReplayUrl(trimmed);
-      setSavedReplayUrl(trimmed || null);
-      setNotice(trimmed ? "Enlace de la partida de Showdown guardado." : "Enlace de Showdown eliminado.");
+      const saved = padReplayUrls(result.urls ?? nextUrls);
+      setReplayUrls(saved);
+      setNotice(
+        filledReplayUrls(saved).length > 0
+          ? "Replays del BO3 guardados."
+          : "Replays de Showdown eliminados.",
+      );
       router.refresh();
     } catch {
       setError("No se pudo conectar con el servidor. Prueba otra vez.");
@@ -290,47 +293,41 @@ export default function PlayerMatchPanel({
           className="space-y-3 border-t border-zinc-800 pt-4"
           onSubmit={(event: FormEvent<HTMLFormElement>) => {
             event.preventDefault();
-            void saveReplay(replayUrl);
+            void saveReplay(replayUrls);
           }}
         >
-          <div className="flex items-center justify-between gap-2">
-            <label
-              className="text-xs font-bold uppercase tracking-wide text-zinc-400"
-              htmlFor="match-showdown-replay"
-            >
-              Partida de Showdown
+          <p className="text-xs font-bold uppercase tracking-wide text-zinc-400">
+            Replays BO3
+          </p>
+          {replayUrls.map((url, index) => (
+            <label className="block space-y-1 text-[10px] text-zinc-500" key={index}>
+              Combate {index + 1}
+              {index === BO3_SLOT_COUNT - 1 ? " (si hace falta)" : ""}
+              <input
+                autoComplete="url"
+                className="w-full rounded-lg border border-zinc-700 bg-zinc-900/80 px-3 py-2.5 text-sm text-white outline-none placeholder:text-zinc-600 focus:border-cyan-300/50"
+                maxLength={400}
+                onChange={(event) => {
+                  const next = [...replayUrls] as [string, string, string];
+                  next[index] = event.target.value;
+                  setReplayUrls(next);
+                }}
+                placeholder="https://psim.us/r/…"
+                type="text"
+                value={url}
+              />
             </label>
-            {savedReplayUrl && (
-              <a
-                className="text-[10px] font-semibold text-sky-300 hover:text-sky-100"
-                href={savedReplayUrl}
-                rel="noreferrer"
-                target="_blank"
-              >
-                Abrir replay
-              </a>
-            )}
-          </div>
-          <input
-            autoComplete="url"
-            className="w-full rounded-lg border border-zinc-700 bg-zinc-900/80 px-3 py-2.5 text-sm text-white outline-none placeholder:text-zinc-600 focus:border-cyan-300/50"
-            id="match-showdown-replay"
-            maxLength={400}
-            onChange={(event) => setReplayUrl(event.target.value)}
-            placeholder="https://psim.us/r/…"
-            type="text"
-            value={replayUrl}
-          />
+          ))}
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="text-[10px] leading-4 text-zinc-600">
-              Cuando terminéis, pega aquí el enlace del replay. Quedará en el historial.
+              Pega los enlaces de cada combate. Quedarán en el historial.
             </p>
             <button
               className="rounded-lg border border-cyan-300/35 bg-cyan-400/15 px-3 py-2 text-xs font-bold text-cyan-100 transition hover:bg-cyan-400/25 disabled:cursor-not-allowed disabled:opacity-50"
               disabled={savingReplay}
               type="submit"
             >
-              {savingReplay ? "Guardando…" : "Guardar replay"}
+              {savingReplay ? "Guardando…" : "Guardar replays"}
             </button>
           </div>
         </form>

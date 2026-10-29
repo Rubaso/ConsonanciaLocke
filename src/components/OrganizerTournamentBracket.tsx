@@ -2,9 +2,14 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import MatchReplayEditor from "@/components/MatchReplayEditor";
+import MatchResultsModal from "@/components/MatchResultsModal";
 import TournamentBracket from "@/components/TournamentBracket";
 import type { TournamentSummary } from "@/components/TournamentManager";
+
+function playerName(tournament: TournamentSummary, playerId: string | null) {
+  if (!playerId) return "Pendiente";
+  return tournament.participants.find((player) => player.id === playerId)?.displayName ?? "Jugador";
+}
 
 export default function OrganizerTournamentBracket({
   tournament,
@@ -15,6 +20,7 @@ export default function OrganizerTournamentBracket({
   const [busyMatchId, setBusyMatchId] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [resultsMatchId, setResultsMatchId] = useState<string | null>(null);
 
   async function setWinner(matchId: string, winnerPlayerId: string | null) {
     setBusyMatchId(matchId);
@@ -53,20 +59,26 @@ export default function OrganizerTournamentBracket({
       );
       router.refresh();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "No se pudo guardar el resultado.");
+      const message = cause instanceof Error ? cause.message : "No se pudo guardar el resultado.";
+      setError(message);
+      throw new Error(message);
     } finally {
       setBusyMatchId(null);
     }
   }
 
+  const resultsMatch = tournament.matches.find((match) => match.id === resultsMatchId);
+
   return (
     <div className="space-y-3">
       <p className="text-xs text-zinc-500">
-        Pulsa el nombre para registrar el ganador. Vuelve a pulsar al ganador marcado para quitar el resultado.
+        Pulsa el nombre para marcar ganador, o usa Meter resultados para el BO3 y los replays.
       </p>
       <TournamentBracket
         busy={busyMatchId !== null}
-        onWinnerSelect={setWinner}
+        onWinnerSelect={(matchId, winnerPlayerId) => {
+          void setWinner(matchId, winnerPlayerId).catch(() => undefined);
+        }}
         tournament={tournament}
       />
       <div className="space-y-2">
@@ -74,13 +86,21 @@ export default function OrganizerTournamentBracket({
           .filter((match) => match.status !== "bye" && match.playerAId && match.playerBId)
           .map((match) => (
             <div
-              className="rounded-lg border border-zinc-800 bg-zinc-950/50 px-3 py-2"
+              className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-zinc-800 bg-zinc-950/50 px-3 py-2"
               key={match.id}
             >
-              <p className="text-[10px] text-zinc-500">
-                Ronda {match.roundNumber} · Combate {match.matchNumber}
+              <p className="text-[10px] text-zinc-400">
+                Ronda {match.roundNumber} · Cruce {match.matchNumber}
+                {" · "}
+                {playerName(tournament, match.playerAId)} vs {playerName(tournament, match.playerBId)}
               </p>
-              <MatchReplayEditor compact initialUrl={match.replayUrl} matchId={match.id} />
+              <button
+                className="rounded-lg border border-amber-300/35 bg-amber-400/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide text-amber-100 hover:bg-amber-400/20"
+                onClick={() => setResultsMatchId(match.id)}
+                type="button"
+              >
+                Meter resultados
+              </button>
             </div>
           ))}
       </div>
@@ -95,6 +115,23 @@ export default function OrganizerTournamentBracket({
         >
           {error || notice}
         </p>
+      )}
+      {resultsMatch?.playerAId && resultsMatch.playerBId && (
+        <MatchResultsModal
+          busy={busyMatchId !== null}
+          initialUrls={resultsMatch.replayUrls}
+          initialWinnerId={resultsMatch.winnerPlayerId}
+          matchId={resultsMatch.id}
+          playerAId={resultsMatch.playerAId}
+          playerAName={playerName(tournament, resultsMatch.playerAId)}
+          playerBId={resultsMatch.playerBId}
+          playerBName={playerName(tournament, resultsMatch.playerBId)}
+          winnerAction="winner"
+          onClose={() => setResultsMatchId(null)}
+          onSaveWinner={async (winnerPlayerId) => {
+            await setWinner(resultsMatch.id, winnerPlayerId);
+          }}
+        />
       )}
     </div>
   );

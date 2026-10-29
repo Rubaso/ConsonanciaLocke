@@ -1,5 +1,6 @@
 import "server-only";
 
+import { filledReplayUrls, parseReplayUrlsFromRow } from "@/lib/showdown-replay";
 import {
   createSupabaseAdminClient,
   getSupabaseConfiguration,
@@ -15,7 +16,7 @@ export type RecentMatchResult = {
   playerAName: string;
   playerBName: string;
   winnerName: string;
-  replayUrl: string | null;
+  replayUrls: string[];
   completedAt: string;
 };
 
@@ -50,15 +51,22 @@ async function loadReplayUrls(
   table: "individual_matches" | "tournament_matches",
   ids: string[],
 ) {
-  if (ids.length === 0) return new Map<string, string>();
+  if (ids.length === 0) return new Map<string, string[]>();
 
-  const response = await supabase.from(table).select("id,showdown_replay_url").in("id", ids);
-  if (response.error) return new Map<string, string>();
+  const response = await supabase
+    .from(table)
+    .select("id,showdown_replay_url,showdown_replay_url_2,showdown_replay_url_3")
+    .in("id", ids);
+  if (response.error) {
+    const fallback = await supabase.from(table).select("id,showdown_replay_url").in("id", ids);
+    if (fallback.error) return new Map<string, string[]>();
+    return new Map(
+      (fallback.data ?? []).map((row) => [row.id, filledReplayUrls(parseReplayUrlsFromRow(row))]),
+    );
+  }
 
   return new Map(
-    (response.data ?? [])
-      .filter((row) => typeof row.showdown_replay_url === "string" && row.showdown_replay_url)
-      .map((row) => [row.id, row.showdown_replay_url as string]),
+    (response.data ?? []).map((row) => [row.id, filledReplayUrls(parseReplayUrlsFromRow(row))]),
   );
 }
 
@@ -115,17 +123,17 @@ export async function getRecentMatchResults(): Promise<RecentMatchResult[]> {
       const completedAt = closedAt(row);
       if (!completedAt || Date.parse(completedAt) < since) return null;
       if (typeof row.winner_player_id !== "string") return null;
-      const replayUrl =
+      const replayUrls =
         row.kind === "individual"
-          ? (individualReplays.get(row.id) ?? null)
-          : (tournamentReplays.get(row.id) ?? null);
+          ? (individualReplays.get(row.id) ?? [])
+          : (tournamentReplays.get(row.id) ?? []);
       return {
         id: row.id,
         kind: row.kind,
         playerAName: nameFor(row.player_a_id),
         playerBName: nameFor(row.player_b_id),
         winnerName: nameFor(row.winner_player_id),
-        replayUrl,
+        replayUrls,
         completedAt,
       };
     })

@@ -1,6 +1,7 @@
 import "server-only";
 
 import type { PlayerSession } from "@/lib/auth";
+import { parseReplayUrlsFromRow } from "@/lib/showdown-replay";
 import {
   createSupabaseAdminClient,
   getSupabaseConfiguration,
@@ -27,7 +28,7 @@ type ReadyMatch = {
   opponentPasteSubmitted: boolean;
   competitionLaunched: boolean;
   pasteLocked: boolean;
-  showdownReplayUrl: string | null;
+  showdownReplayUrls: string[];
 };
 
 export type PlayerMatchData =
@@ -45,6 +46,8 @@ type MatchRow = {
   player_b_pokepaste_url: string | null;
   scheduled_at: string | null;
   showdown_replay_url: string | null;
+  showdown_replay_url_2?: string | null;
+  showdown_replay_url_3?: string | null;
 };
 
 function parsePaste(url: unknown): MatchPaste | null {
@@ -134,10 +137,7 @@ async function buildReadyMatch(
       opponentPasteSubmitted: details.launched && Boolean(opponentPasteUrl),
       competitionLaunched: details.launched,
       pasteLocked: details.lockOnSubmit && details.launched && Boolean(ownPasteUrl),
-      showdownReplayUrl:
-        match.showdown_replay_url === null || typeof match.showdown_replay_url === "string"
-          ? match.showdown_replay_url
-          : null,
+      showdownReplayUrls: parseReplayUrlsFromRow(match),
     };
   } catch (error) {
     console.error(
@@ -205,7 +205,7 @@ export async function getPlayerMatchData(
     const matchesResponse = await supabase
       .from("tournament_matches")
       .select(
-        "id,tournament_id,phase,round_number,match_number,player_a_id,player_b_id,status,scheduled_at,player_a_pokepaste_url,player_b_pokepaste_url,showdown_replay_url",
+        "id,tournament_id,phase,round_number,match_number,player_a_id,player_b_id,status,scheduled_at,player_a_pokepaste_url,player_b_pokepaste_url,showdown_replay_url,showdown_replay_url_2,showdown_replay_url_3",
       )
       .in("tournament_id", [...tournamentNames.keys()])
       .or(`player_a_id.eq.${player.id},player_b_id.eq.${player.id}`)
@@ -281,7 +281,7 @@ export async function getPlayerMatchData(
     const roundMatchesResponse = await supabase
       .from("individual_matches")
       .select(
-        "id,round_id,round_match_number,player_a_id,player_b_id,status,scheduled_at,player_a_pokepaste_url,player_b_pokepaste_url,showdown_replay_url",
+        "id,round_id,round_match_number,player_a_id,player_b_id,status,scheduled_at,player_a_pokepaste_url,player_b_pokepaste_url,showdown_replay_url,showdown_replay_url_2,showdown_replay_url_3",
       )
       .in("round_id", [...rounds.keys()])
       .or(`player_a_id.eq.${player.id},player_b_id.eq.${player.id}`)
@@ -323,7 +323,7 @@ export async function getPlayerMatchData(
   const individualMatchResponse = await supabase
     .from("individual_matches")
     .select(
-      "id,player_a_id,player_b_id,status,scheduled_at,player_a_pokepaste_url,player_b_pokepaste_url,showdown_replay_url",
+      "id,player_a_id,player_b_id,status,scheduled_at,player_a_pokepaste_url,player_b_pokepaste_url,showdown_replay_url,showdown_replay_url_2,showdown_replay_url_3",
     )
     .is("round_id", null)
     .or(`player_a_id.eq.${player.id},player_b_id.eq.${player.id}`)
