@@ -19,6 +19,7 @@ export type TournamentManagementData =
       status: "ready";
       isOrganizer: boolean;
       activePlayers: { id: string; displayName: string; color: string }[];
+      players: { id: string; displayName: string; color: string }[];
       tournaments: TournamentSummary[];
       individualMatches: IndividualMatchSummary[];
       individualRounds: IndividualMatchRoundSummary[];
@@ -214,6 +215,7 @@ export async function getTournamentManagementData(): Promise<TournamentManagemen
       displayName: activePlayer.display_name,
       color: activePlayer.color,
     })),
+    players: [...playerMap.values()],
     tournaments,
     individualMatches,
     individualRounds,

@@ -93,12 +93,14 @@ export default function TournamentManager({
   individualRounds,
   initialMode,
   tournaments,
+  showIndividualLists = true,
 }: {
   activePlayers: ActivePlayer[];
   individualMatches: IndividualMatchSummary[];
   individualRounds: IndividualMatchRoundSummary[];
   initialMode: "individual" | "tournament";
   tournaments: TournamentSummary[];
+  showIndividualLists?: boolean;
 }) {
   const router = useRouter();
   const mode = initialMode;
@@ -392,7 +394,7 @@ export default function TournamentManager({
         </p>
       )}
 
-      {mode === "individual" && individualRounds.length > 0 && (
+      {showIndividualLists && mode === "individual" && individualRounds.length > 0 && (
         <div className="space-y-3 border-t border-zinc-800 pt-5">
           <h3 className="text-sm font-bold text-zinc-200">Rondas individuales</h3>
           <div className="grid gap-4 md:grid-cols-2">
@@ -578,7 +580,7 @@ export default function TournamentManager({
         </div>
       )}
 
-      {mode === "individual" && individualMatches.some((match) => match.roundId === null) && (
+      {showIndividualLists && mode === "individual" && individualMatches.some((match) => match.roundId === null) && (
         <div className="space-y-3 border-t border-zinc-800 pt-5">
           <h3 className="text-sm font-bold text-zinc-200">Combates individuales sueltos</h3>
           <div className="grid gap-2 md:grid-cols-2">
