@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
 import { getCurrentPlayer } from "@/lib/auth";
-import { isShowdownReplayUrl, normalizeShowdownReplayUrl } from "@/lib/showdown-replay";
+import { normalizeShowdownReplayUrl } from "@/lib/showdown-replay";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const MAX_REQUEST_SIZE = 4 * 1024;
+const EDITABLE_INDIVIDUAL_STATUSES = ["draft", "pending", "completed", "forfeit"];
+const EDITABLE_TOURNAMENT_STATUSES = ["pending", "completed", "forfeit"];
 
 function isSameOrigin(request: Request) {
   const origin = request.headers.get("origin");
@@ -46,18 +48,12 @@ export async function PATCH(request: Request) {
     !UUID_PATTERN.test(body.matchId) ||
     typeof body.content !== "string"
   ) {
-    return NextResponse.json({ error: "Revisa el enlace de Showdown." }, { status: 400 });
+    return NextResponse.json({ error: "Revisa el enlace." }, { status: 400 });
   }
 
   const content = normalizeShowdownReplayUrl(body.content);
-  if (content.length > 400 || (content.length > 0 && !isShowdownReplayUrl(content))) {
-    return NextResponse.json(
-      {
-        error:
-          "Introduce una URL de replay de Pokémon Showdown (https://replay.pokemonshowdown.com/…).",
-      },
-      { status: 400 },
-    );
+  if (content.length > 400) {
+    return NextResponse.json({ error: "El enlace es demasiado largo." }, { status: 400 });
   }
 
   let player;
@@ -70,6 +66,7 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "Inicia sesión para guardar el enlace de la partida." }, { status: 401 });
   }
 
+  const isOrganizer = player.role === "organizer";
   const supabase = createSupabaseAdminClient();
   const tournamentMatchResponse = await supabase
     .from("tournament_matches")
@@ -82,13 +79,17 @@ export async function PATCH(request: Request) {
   }
 
   let table: "tournament_matches" | "individual_matches" | null = null;
+  let allowedStatuses: string[] = [];
+  const tournamentMatch = tournamentMatchResponse.data;
   if (
-    tournamentMatchResponse.data &&
-    tournamentMatchResponse.data.status === "pending" &&
-    (tournamentMatchResponse.data.player_a_id === player.id ||
-      tournamentMatchResponse.data.player_b_id === player.id)
+    tournamentMatch &&
+    EDITABLE_TOURNAMENT_STATUSES.includes(tournamentMatch.status) &&
+    (isOrganizer ||
+      tournamentMatch.player_a_id === player.id ||
+      tournamentMatch.player_b_id === player.id)
   ) {
     table = "tournament_matches";
+    allowedStatuses = EDITABLE_TOURNAMENT_STATUSES;
   } else {
     const individualMatchResponse = await supabase
       .from("individual_matches")
@@ -102,37 +103,33 @@ export async function PATCH(request: Request) {
     const match = individualMatchResponse.data;
     if (
       match &&
-      ["draft", "pending"].includes(match.status) &&
-      (match.player_a_id === player.id || match.player_b_id === player.id)
+      EDITABLE_INDIVIDUAL_STATUSES.includes(match.status) &&
+      (isOrganizer || match.player_a_id === player.id || match.player_b_id === player.id)
     ) {
       table = "individual_matches";
+      allowedStatuses = EDITABLE_INDIVIDUAL_STATUSES;
     }
   }
 
   if (!table) {
     return NextResponse.json(
-      { error: "No tienes un combate pendiente donde guardar este enlace." },
-      { status: 404 },
+      { error: "No puedes editar el replay de este combate." },
+      { status: 403 },
     );
   }
 
-  const updateResponse = await supabase
+  let updateQuery = supabase
     .from(table)
     .update({ showdown_replay_url: content || null })
     .eq("id", body.matchId)
-    .in("status", table === "individual_matches" ? ["draft", "pending"] : ["pending"])
-    .or(`player_a_id.eq.${player.id},player_b_id.eq.${player.id}`)
-    .select("id")
-    .maybeSingle();
+    .in("status", allowedStatuses);
+  if (!isOrganizer) {
+    updateQuery = updateQuery.or(`player_a_id.eq.${player.id},player_b_id.eq.${player.id}`);
+  }
+  const updateResponse = await updateQuery.select("id").maybeSingle();
 
   if (updateResponse.error) {
     console.error("Failed to save Showdown replay:", updateResponse.error.message);
-    if (updateResponse.error.code === "23514") {
-      return NextResponse.json(
-        { error: "Introduce una URL de replay de Pokémon Showdown válida." },
-        { status: 400 },
-      );
-    }
     return NextResponse.json(
       { error: "No se pudo guardar el enlace. Comprueba que la migración de Showdown esté aplicada." },
       { status: 503 },
@@ -140,7 +137,7 @@ export async function PATCH(request: Request) {
   }
   if (!updateResponse.data) {
     return NextResponse.json(
-      { error: "El combate ya no está pendiente." },
+      { error: "No se pudo actualizar el replay de este combate." },
       { status: 409 },
     );
   }

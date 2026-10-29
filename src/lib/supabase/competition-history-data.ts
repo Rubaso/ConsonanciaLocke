@@ -6,8 +6,11 @@ import {
 } from "@/lib/supabase/admin";
 
 export type CompetitionHistoryMatch = {
+  id: string;
   roundNumber: number;
   matchNumber: number;
+  playerAId: string;
+  playerBId: string;
   playerAName: string;
   playerBName: string;
   winnerName: string | null;
@@ -31,6 +34,8 @@ export type CompetitionHistoryData =
 
 export type StandaloneIndividualHistoryMatch = {
   id: string;
+  playerAId: string;
+  playerBId: string;
   playerAName: string;
   playerBName: string;
   winnerName: string | null;
@@ -106,7 +111,7 @@ export async function getCompetitionHistoryData(
       tournamentIds.length > 0
         ? supabase
             .from("tournament_matches")
-            .select("tournament_id,round_number,match_number,player_a_id,player_b_id,winner_player_id,status,showdown_replay_url")
+            .select("id,tournament_id,round_number,match_number,player_a_id,player_b_id,winner_player_id,status,showdown_replay_url")
             .in("tournament_id", tournamentIds)
             .order("round_number")
             .order("match_number")
@@ -114,7 +119,7 @@ export async function getCompetitionHistoryData(
       roundIds.length > 0
         ? supabase
             .from("individual_matches")
-            .select("round_id,round_match_number,player_a_id,player_b_id,winner_player_id,status,showdown_replay_url")
+            .select("id,round_id,round_match_number,player_a_id,player_b_id,winner_player_id,status,showdown_replay_url")
             .in("round_id", roundIds)
             .order("round_match_number")
         : Promise.resolve({ data: [], error: null }),
@@ -172,8 +177,11 @@ export async function getCompetitionHistoryData(
       matches: (tournamentMatchesResponse.data ?? [])
         .filter((match) => match.tournament_id === tournament.id)
         .map((match) => ({
+          id: match.id,
           roundNumber: match.round_number,
           matchNumber: match.match_number,
+          playerAId: match.player_a_id,
+          playerBId: match.player_b_id,
           playerAName: nameFor(match.player_a_id),
           playerBName: nameFor(match.player_b_id),
           winnerName: match.winner_player_id ? nameFor(match.winner_player_id) : null,
@@ -200,8 +208,11 @@ export async function getCompetitionHistoryData(
       matches: (roundMatchesResponse.data ?? [])
         .filter((match) => match.round_id === round.id)
         .map((match) => ({
+          id: match.id,
           roundNumber: round.round_number,
           matchNumber: match.round_match_number ?? 1,
+          playerAId: match.player_a_id ?? "",
+          playerBId: match.player_b_id ?? "",
           playerAName: nameFor(match.player_a_id),
           playerBName: nameFor(match.player_b_id),
           winnerName: match.winner_player_id ? nameFor(match.winner_player_id) : null,
@@ -283,6 +294,8 @@ export async function getIndividualCombatHistoryData(): Promise<IndividualCombat
       rounds: roundsHistory.competitions,
       matches: rows.map((row) => ({
         id: row.id,
+        playerAId: row.player_a_id,
+        playerBId: row.player_b_id,
         playerAName: nameFor(row.player_a_id),
         playerBName: nameFor(row.player_b_id),
         winnerName: row.winner_player_id ? nameFor(row.winner_player_id) : null,

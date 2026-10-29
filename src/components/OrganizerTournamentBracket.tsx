@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import MatchReplayEditor from "@/components/MatchReplayEditor";
 import TournamentBracket from "@/components/TournamentBracket";
 import type { TournamentSummary } from "@/components/TournamentManager";
 
@@ -68,6 +69,21 @@ export default function OrganizerTournamentBracket({
         onWinnerSelect={setWinner}
         tournament={tournament}
       />
+      <div className="space-y-2">
+        {tournament.matches
+          .filter((match) => match.status !== "bye" && match.playerAId && match.playerBId)
+          .map((match) => (
+            <div
+              className="rounded-lg border border-zinc-800 bg-zinc-950/50 px-3 py-2"
+              key={match.id}
+            >
+              <p className="text-[10px] text-zinc-500">
+                Ronda {match.roundNumber} · Combate {match.matchNumber}
+              </p>
+              <MatchReplayEditor compact initialUrl={match.replayUrl} matchId={match.id} />
+            </div>
+          ))}
+      </div>
       {(error || notice) && (
         <p
           className={`rounded-lg border px-3 py-2 text-sm ${

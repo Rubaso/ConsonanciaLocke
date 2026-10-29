@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
+import MatchReplayEditor from "@/components/MatchReplayEditor";
 import TournamentBracket from "@/components/TournamentBracket";
 
 type TournamentPlayer = {
@@ -18,6 +19,7 @@ type TournamentMatch = {
   playerBId: string | null;
   winnerPlayerId: string | null;
   status: "pending" | "completed" | "bye" | "forfeit";
+  replayUrl: string | null;
 };
 
 export type TournamentSummary = {
@@ -558,6 +560,7 @@ export default function TournamentManager({
                               Cancelado
                             </p>
                           )}
+                          <MatchReplayEditor compact initialUrl={match.replayUrl} matchId={match.id} />
                         </>
                       )}
                     </div>
@@ -584,16 +587,7 @@ export default function TournamentManager({
                     {" vs "}
                     {getPlayerName(activePlayers, match.playerBId)}
                   </p>
-                  {match.replayUrl && (
-                    <a
-                      className="mt-1 inline-flex text-[10px] font-bold text-sky-300 hover:text-sky-100"
-                      href={match.replayUrl}
-                      rel="noreferrer"
-                      target="_blank"
-                    >
-                      Ver partida
-                    </a>
-                  )}
+                  <MatchReplayEditor compact initialUrl={match.replayUrl} matchId={match.id} />
                 </div>
                 {match.status !== "cancelled" ? (
                   <div className="flex items-center gap-2">

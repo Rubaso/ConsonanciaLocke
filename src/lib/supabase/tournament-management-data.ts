@@ -96,7 +96,7 @@ export async function getTournamentManagementData(): Promise<TournamentManagemen
             .in("tournament_id", tournamentIds),
           supabase
             .from("tournament_matches")
-            .select("id,tournament_id,round_number,match_number,player_a_id,player_b_id,winner_player_id,status")
+            .select("id,tournament_id,round_number,match_number,player_a_id,player_b_id,winner_player_id,status,showdown_replay_url")
             .in("tournament_id", tournamentIds)
             .order("round_number")
             .order("match_number"),
@@ -166,6 +166,8 @@ export async function getTournamentManagementData(): Promise<TournamentManagemen
         playerBId: match.player_b_id,
         winnerPlayerId: match.winner_player_id,
         status: match.status as TournamentSummary["matches"][number]["status"],
+        replayUrl:
+          typeof match.showdown_replay_url === "string" ? match.showdown_replay_url : null,
       })),
   }));
 

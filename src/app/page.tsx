@@ -17,6 +17,8 @@ import { getPlayerPokepasteProfile } from "@/lib/supabase/player-pokepaste-profi
 import PokemonSprite from "@/components/PokemonSprite";
 import { getRecentShinyAnnouncements } from "@/lib/supabase/shiny-announcement";
 import { isContestResultsBannerVisible } from "@/lib/contest-results";
+import RecentMatchResults from "@/components/RecentMatchResults";
+import { getRecentMatchResults } from "@/lib/supabase/recent-match-results";
 
 async function ActivitySection() {
   await connection();
@@ -54,20 +56,29 @@ async function ShinyAnnouncementSection() {
       </p>
     );
   }
-  if (result.announcements.length === 0) return null;
+  const announcements = result.announcements.slice(0, 4);
+  if (announcements.length === 0) return null;
 
   const dateFormatter = new Intl.DateTimeFormat("es-ES", {
     dateStyle: "medium",
     timeStyle: "short",
     timeZone: "Europe/Madrid",
   });
+  const columnClass =
+    announcements.length === 1
+      ? "grid grid-cols-1"
+      : announcements.length === 2
+        ? "grid grid-cols-1 gap-3 sm:grid-cols-2"
+        : announcements.length === 3
+          ? "grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3"
+          : "grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4";
 
   return (
-    <div className="space-y-3">
-      {result.announcements.map((announcement) => (
+    <div className={columnClass}>
+      {announcements.map((announcement) => (
         <aside
           aria-label={`Captura shiny de ${announcement.pokemonName}`}
-          className="flex items-center gap-4 rounded-xl border border-sky-300/40 bg-sky-950/45 px-4 py-3 shadow-lg shadow-sky-950/20"
+          className="flex min-w-0 items-center gap-3 rounded-xl border border-sky-300/40 bg-sky-950/45 px-4 py-3 shadow-lg shadow-sky-950/20"
           key={announcement.id}
           role="status"
         >
@@ -75,7 +86,7 @@ async function ShinyAnnouncementSection() {
             species={announcement.species}
             form={announcement.form}
             isShiny
-            size={64}
+            size={announcements.length === 1 ? 64 : 56}
             framed={false}
           />
           <div className="min-w-0 flex-1">
@@ -92,12 +103,14 @@ async function ShinyAnnouncementSection() {
               Capturado el {dateFormatter.format(new Date(announcement.occurredAt))}.
             </p>
           </div>
-          <span
-            aria-hidden="true"
-            className="hidden shrink-0 text-2xl text-sky-300 sm:block"
-          >
-            ✦
-          </span>
+          {announcements.length === 1 && (
+            <span
+              aria-hidden="true"
+              className="hidden shrink-0 text-2xl text-sky-300 sm:block"
+            >
+              ✦
+            </span>
+          )}
         </aside>
       ))}
     </div>
@@ -139,7 +152,10 @@ async function PlayerMatchSection() {
 
   const player = await getCurrentPlayer();
   if (!player) {
+    const recentResults = await getRecentMatchResults();
     return (
+      <div className="space-y-4">
+        <RecentMatchResults results={recentResults} />
       <MatchNotice>
         <p>Inicia sesión para consultar tu combate y compartir tu equipo.</p>
         <Link
@@ -150,14 +166,17 @@ async function PlayerMatchSection() {
         </Link>
         <PokepasteHelp />
       </MatchNotice>
+      </div>
     );
   }
 
-  const [match, pasteHistory, pokepasteProfile] = await Promise.all([
+  const [match, pasteHistory, pokepasteProfile, recentResults] = await Promise.all([
     getPlayerMatchData(player),
     getPlayerPokepasteHistory(player.id),
     getPlayerPokepasteProfile(player.id),
+    getRecentMatchResults(),
   ]);
+  const recentResultsSection = <RecentMatchResults results={recentResults} />;
   const pokepasteProfileSection =
     pokepasteProfile.status === "ready" ? (
       <PlayerPokepasteProfile initialUrl={pokepasteProfile.url} />
@@ -177,6 +196,7 @@ async function PlayerMatchSection() {
   if (match.status === "ready") {
     return (
       <div className="space-y-4">
+        {recentResultsSection}
         {pokepasteProfileSection}
         <PlayerMatchPanel {...match} />
         {historySection}
@@ -186,6 +206,7 @@ async function PlayerMatchSection() {
   if (match.status === "no-match") {
     return (
       <div className="space-y-4">
+        {recentResultsSection}
         {pokepasteProfileSection}
         <MatchNotice>
           <p className="font-semibold text-zinc-300">No tienes un combate pendiente</p>
@@ -201,6 +222,7 @@ async function PlayerMatchSection() {
   if (match.status === "not-configured") {
     return (
       <div className="space-y-4">
+        {recentResultsSection}
         {pokepasteProfileSection}
         <MatchNotice>
           Faltan variables de servidor: {match.missingVariables.join(", ")}.
@@ -211,6 +233,7 @@ async function PlayerMatchSection() {
   if (match.status === "migration-required") {
     return (
       <div className="space-y-4">
+        {recentResultsSection}
         {pokepasteProfileSection}
         <MatchNotice role="alert">
           Falta aplicar la migración{" "}
@@ -222,6 +245,7 @@ async function PlayerMatchSection() {
   }
   return (
     <div className="space-y-4">
+      {recentResultsSection}
       {pokepasteProfileSection}
       <MatchNotice role="alert">
         No se pudo cargar tu combate. Revisa la conexión y el esquema de Supabase.

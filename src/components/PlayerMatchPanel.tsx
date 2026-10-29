@@ -317,8 +317,8 @@ export default function PlayerMatchPanel({
             id="match-showdown-replay"
             maxLength={400}
             onChange={(event) => setReplayUrl(event.target.value)}
-            placeholder="https://replay.pokemonshowdown.com/…"
-            type="url"
+            placeholder="https://psim.us/r/…"
+            type="text"
             value={replayUrl}
           />
           <div className="flex flex-wrap items-center justify-between gap-2">
