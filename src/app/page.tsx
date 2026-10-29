@@ -137,9 +137,19 @@ function ActivityLoading() {
   );
 }
 
-async function PlayerMatchSection() {
+async function HomeSidebar() {
   await connection();
+  const results = await getRecentMatchResults();
 
+  return (
+    <div className="min-w-0 space-y-4">
+      <RecentMatchResults results={results} />
+      <PlayerMatchSection />
+    </div>
+  );
+}
+
+async function PlayerMatchSection() {
   const configuration = getSupabaseConfiguration();
   if (configuration.status === "not-configured") {
     return (
@@ -152,10 +162,7 @@ async function PlayerMatchSection() {
 
   const player = await getCurrentPlayer();
   if (!player) {
-    const recentResults = await getRecentMatchResults();
     return (
-      <div className="space-y-4">
-        <RecentMatchResults results={recentResults} />
       <MatchNotice>
         <p>Inicia sesión para consultar tu combate y compartir tu equipo.</p>
         <Link
@@ -166,17 +173,14 @@ async function PlayerMatchSection() {
         </Link>
         <PokepasteHelp />
       </MatchNotice>
-      </div>
     );
   }
 
-  const [match, pasteHistory, pokepasteProfile, recentResults] = await Promise.all([
+  const [match, pasteHistory, pokepasteProfile] = await Promise.all([
     getPlayerMatchData(player),
     getPlayerPokepasteHistory(player.id),
     getPlayerPokepasteProfile(player.id),
-    getRecentMatchResults(),
   ]);
-  const recentResultsSection = <RecentMatchResults results={recentResults} />;
   const pokepasteProfileSection =
     pokepasteProfile.status === "ready" ? (
       <PlayerPokepasteProfile initialUrl={pokepasteProfile.url} />
@@ -196,7 +200,6 @@ async function PlayerMatchSection() {
   if (match.status === "ready") {
     return (
       <div className="space-y-4">
-        {recentResultsSection}
         {pokepasteProfileSection}
         <PlayerMatchPanel {...match} />
         {historySection}
@@ -206,7 +209,6 @@ async function PlayerMatchSection() {
   if (match.status === "no-match") {
     return (
       <div className="space-y-4">
-        {recentResultsSection}
         {pokepasteProfileSection}
         <MatchNotice>
           <p className="font-semibold text-zinc-300">No tienes un combate pendiente</p>
@@ -222,7 +224,6 @@ async function PlayerMatchSection() {
   if (match.status === "not-configured") {
     return (
       <div className="space-y-4">
-        {recentResultsSection}
         {pokepasteProfileSection}
         <MatchNotice>
           Faltan variables de servidor: {match.missingVariables.join(", ")}.
@@ -233,7 +234,6 @@ async function PlayerMatchSection() {
   if (match.status === "migration-required") {
     return (
       <div className="space-y-4">
-        {recentResultsSection}
         {pokepasteProfileSection}
         <MatchNotice role="alert">
           Falta aplicar la migración{" "}
@@ -245,7 +245,6 @@ async function PlayerMatchSection() {
   }
   return (
     <div className="space-y-4">
-      {recentResultsSection}
       {pokepasteProfileSection}
       <MatchNotice role="alert">
         No se pudo cargar tu combate. Revisa la conexión y el esquema de Supabase.
@@ -615,7 +614,7 @@ export default function Home() {
           <ActivitySection />
         </Suspense>
         <Suspense fallback={<MatchLoading />}>
-          <PlayerMatchSection />
+          <HomeSidebar />
         </Suspense>
       </div>
     </div>
