@@ -105,7 +105,7 @@ export async function POST(request: Request) {
       !(body.notes === null || typeof body.notes === "string") ||
       (typeof body.notes === "string" && body.notes.trim().length > 1000)
     ) {
-      return NextResponse.json({ error: "Revisa los participantes, fecha y notas del combate." }, { status: 400 });
+      return NextResponse.json({ error: "Elige dos jugadores distintos." }, { status: 400 });
     }
 
     const playerResponse = await supabase
@@ -119,6 +119,28 @@ export async function POST(request: Request) {
     }
     if (playerResponse.data.length !== 2) {
       return NextResponse.json({ error: "Los dos participantes deben tener una cuenta activa." }, { status: 400 });
+    }
+
+    const pendingResponse = await supabase
+      .from("individual_matches")
+      .select("id,player_a_id,player_b_id")
+      .in("status", ["draft", "pending"])
+      .or(
+        `player_a_id.eq.${body.playerAId},player_b_id.eq.${body.playerAId},player_a_id.eq.${body.playerBId},player_b_id.eq.${body.playerBId}`,
+      )
+      .limit(1);
+    if (pendingResponse.error) {
+      console.error(
+        "Failed to check pending individual matches:",
+        pendingResponse.error.message,
+      );
+      return NextResponse.json({ error: "No se pudo comprobar si ya hay un combate pendiente." }, { status: 503 });
+    }
+    if ((pendingResponse.data ?? []).length > 0) {
+      return NextResponse.json(
+        { error: "Uno de los dos jugadores ya tiene un combate individual pendiente." },
+        { status: 409 },
+      );
     }
 
     const insertResponse = await supabase

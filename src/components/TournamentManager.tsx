@@ -101,25 +101,29 @@ export default function TournamentManager({
   const mode = initialMode;
   const [selectedPlayers, setSelectedPlayers] = useState<string[]>([]);
   const [tournamentName, setTournamentName] = useState("");
-  const [individualRoundName, setIndividualRoundName] = useState("");
+  const [playerAId, setPlayerAId] = useState("");
+  const [playerBId, setPlayerBId] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
 
-  async function createIndividualRound() {
+  async function createIndividualMatch() {
     setBusy(true);
     setError("");
     setNotice("");
     try {
       await sendOrganizerRequest("POST", {
-        kind: "individual-round",
-        name: individualRoundName,
+        kind: "individual",
+        playerAId,
+        playerBId,
+        notes: null,
       });
-      setNotice("Ronda aleatoria creada como borrador. Revisa los cruces antes de lanzarla.");
-      setIndividualRoundName("");
+      setNotice("Combate creado. Los dos jugadores lo verán en inicio mientras esté pendiente.");
+      setPlayerAId("");
+      setPlayerBId("");
       router.refresh();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "No se pudo crear la ronda.");
+      setError(cause instanceof Error ? cause.message : "No se pudo crear el combate.");
     } finally {
       setBusy(false);
     }
@@ -217,33 +221,58 @@ export default function TournamentManager({
         </p>
         <h2 className="mt-1 text-xl font-black text-white">Gestionar combates</h2>
         <p className="mt-1 text-sm text-zinc-400">
-          Crea una partida individual o prepara un torneo de eliminación directa.
+          Elige dos jugadores para un combate, o prepara un torneo de eliminación directa.
         </p>
       </header>
 
       {mode === "individual" ? (
         <div className="space-y-3">
           <p className="text-sm leading-6 text-zinc-400">
-            Se incluirán automáticamente todos los jugadores activos. La ronda se sortea como borrador para que puedas revisar y cambiar los cruces antes de lanzarla.
+            Elige dos jugadores y se crea un solo combate. Mientras esté pendiente, les saldrá en inicio. Al marcar el ganador deja de mostrarse.
           </p>
-          <label className="block space-y-1 text-xs font-semibold text-zinc-400">
-            Nombre del torneo de combates individuales
-            <input
-              className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2.5 text-sm text-zinc-100"
-              maxLength={80}
-              onChange={(event) => setIndividualRoundName(event.target.value)}
-              placeholder="Ej. Liga Consonancia - Jornada 1"
-              required
-              value={individualRoundName}
-            />
-          </label>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <label className="block space-y-1 text-xs font-semibold text-zinc-400">
+              Jugador 1
+              <select
+                className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2.5 text-sm text-zinc-100"
+                onChange={(event) => setPlayerAId(event.target.value)}
+                value={playerAId}
+              >
+                <option value="">Seleccionar</option>
+                {activePlayers
+                  .filter((player) => player.id !== playerBId)
+                  .map((player) => (
+                    <option key={player.id} value={player.id}>
+                      {player.displayName}
+                    </option>
+                  ))}
+              </select>
+            </label>
+            <label className="block space-y-1 text-xs font-semibold text-zinc-400">
+              Jugador 2
+              <select
+                className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2.5 text-sm text-zinc-100"
+                onChange={(event) => setPlayerBId(event.target.value)}
+                value={playerBId}
+              >
+                <option value="">Seleccionar</option>
+                {activePlayers
+                  .filter((player) => player.id !== playerAId)
+                  .map((player) => (
+                    <option key={player.id} value={player.id}>
+                      {player.displayName}
+                    </option>
+                  ))}
+              </select>
+            </label>
+          </div>
           <button
             className="w-full rounded-lg bg-cyan-300 px-4 py-3 text-sm font-black text-slate-950 transition hover:bg-cyan-200 disabled:opacity-50"
-            disabled={busy || activePlayers.length < 2 || !individualRoundName.trim()}
-            onClick={() => void createIndividualRound()}
+            disabled={busy || !playerAId || !playerBId || playerAId === playerBId}
+            onClick={() => void createIndividualMatch()}
             type="button"
           >
-            Aleatorizar todos los combates
+            Crear combate
           </button>
         </div>
       ) : (
@@ -579,19 +608,21 @@ export default function TournamentManager({
                         <option value={match.playerBId}>{getPlayerName(activePlayers, match.playerBId)}</option>
                       </select>
                     </label>
-                    <button
-                      className="rounded border border-rose-300/25 px-2 py-1.5 text-[10px] font-semibold text-rose-200 transition hover:bg-rose-300/10 disabled:opacity-50"
-                      disabled={busy}
-                      onClick={() => void deleteAction(
-                        "individual-match",
-                        match.id,
-                        "¿Cancelar y borrar este combate individual pendiente?",
-                        "Combate cancelado y borrado.",
-                      )}
-                      type="button"
-                    >
-                      Cancelar y borrar
-                    </button>
+                    {match.status === "pending" && (
+                      <button
+                        className="rounded border border-rose-300/25 px-2 py-1.5 text-[10px] font-semibold text-rose-200 transition hover:bg-rose-300/10 disabled:opacity-50"
+                        disabled={busy}
+                        onClick={() => void deleteAction(
+                          "individual-match",
+                          match.id,
+                          "¿Cancelar y borrar este combate individual pendiente?",
+                          "Combate cancelado y borrado.",
+                        )}
+                        type="button"
+                      >
+                        Cancelar y borrar
+                      </button>
+                    )}
                   </div>
                 ) : (
                   <span className="text-[10px] font-semibold text-teal-300">Cancelado</span>

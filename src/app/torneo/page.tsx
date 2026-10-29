@@ -10,7 +10,7 @@ const sections = [
     href: "/torneo/individual",
     eyebrow: "Combates",
     title: "Individual",
-    description: "Rondas, emparejamientos y resultados de los combates individuales.",
+    description: "Combates de uno contra uno y resultados.",
     tone: "cyan",
   },
   {

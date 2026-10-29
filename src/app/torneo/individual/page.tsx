@@ -43,11 +43,14 @@ async function IndividualMatchesContent() {
           ← Competición
         </Link>
         <p className="text-xs font-bold uppercase tracking-[0.2em] text-cyan-300">
-          individuales · Rondas
+          Competición · Individual
         </p>
         <h1 className="text-3xl font-black tracking-tight text-zinc-100">
           Combates individuales
         </h1>
+        <p className="text-sm text-zinc-400">
+          Un combate entre dos jugadores. Mientras esté pendiente, les aparece en inicio.
+        </p>
       </header>
 
       {data.isOrganizer ? (
