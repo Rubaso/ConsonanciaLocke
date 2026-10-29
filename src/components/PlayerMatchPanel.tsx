@@ -19,6 +19,7 @@ type Props = {
   opponentPasteSubmitted: boolean;
   competitionLaunched: boolean;
   pasteLocked: boolean;
+  showdownReplayUrl: string | null;
 };
 
 const dateFormatter = new Intl.DateTimeFormat("es-ES", {
@@ -42,12 +43,16 @@ export default function PlayerMatchPanel({
   opponentPasteSubmitted,
   competitionLaunched,
   pasteLocked,
+  showdownReplayUrl: initialReplayUrl,
 }: Props) {
   const router = useRouter();
   const [content, setContent] = useState(initialOwnPaste?.content ?? "");
   const [ownPaste, setOwnPaste] = useState(initialOwnPaste);
   const [hasOwnPaste, setHasOwnPaste] = useState(ownPasteSubmitted);
+  const [replayUrl, setReplayUrl] = useState(initialReplayUrl ?? "");
+  const [savedReplayUrl, setSavedReplayUrl] = useState(initialReplayUrl);
   const [saving, setSaving] = useState(false);
+  const [savingReplay, setSavingReplay] = useState(false);
   const [copying, setCopying] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -101,22 +106,52 @@ export default function PlayerMatchPanel({
     }
   }
 
+  async function saveReplay(nextContent: string) {
+    setSavingReplay(true);
+    setError("");
+    setNotice("");
+
+    try {
+      const response = await fetch("/api/player/match-replay", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ matchId, content: nextContent }),
+      });
+      const result = (await response.json()) as { error?: string; ok?: boolean; content?: string | null };
+
+      if (!response.ok || !result.ok) {
+        setError(result.error ?? "No se pudo guardar el enlace de Showdown.");
+        return;
+      }
+
+      const trimmed = nextContent.trim();
+      setReplayUrl(trimmed);
+      setSavedReplayUrl(trimmed || null);
+      setNotice(trimmed ? "Enlace de la partida de Showdown guardado." : "Enlace de Showdown eliminado.");
+      router.refresh();
+    } catch {
+      setError("No se pudo conectar con el servidor. Prueba otra vez.");
+    } finally {
+      setSavingReplay(false);
+    }
+  }
+
   const phaseLabel =
     phase.toLowerCase() === "main" ? `Ronda ${roundNumber}` : phase;
 
   return (
     <section
       aria-labelledby="match-panel-heading"
-      className="overflow-hidden rounded-xl border border-cyan-300/20 bg-slate-950/75"
+      className="match-pending-banner overflow-hidden rounded-2xl border-2 border-cyan-300/55 bg-slate-950/80"
     >
-      <header className="border-b border-cyan-300/10 bg-cyan-950/20 px-4 py-3">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-cyan-300">
+      <header className="border-b border-cyan-300/15 bg-cyan-950/30 px-5 py-5 sm:px-6 sm:py-6">
+        <p className="text-xs font-bold uppercase tracking-[0.22em] text-cyan-300">
           Tu combate
         </p>
-        <h2 id="match-panel-heading" className="mt-1 text-lg font-black text-zinc-100">
+        <h2 id="match-panel-heading" className="mt-2 text-2xl font-black tracking-tight text-white sm:text-3xl">
           {tournamentName}
         </h2>
-        <p className="mt-1 text-sm text-zinc-400">
+        <p className="mt-2 text-base text-zinc-200">
           {phaseLabel} · Combate {matchNumber} contra{" "}
           <strong style={{ color: opponentColor }}>{opponentName}</strong>
         </p>
@@ -250,6 +285,55 @@ export default function PlayerMatchPanel({
             </div>
           </form>
         )}
+
+        <form
+          className="space-y-3 border-t border-zinc-800 pt-4"
+          onSubmit={(event: FormEvent<HTMLFormElement>) => {
+            event.preventDefault();
+            void saveReplay(replayUrl);
+          }}
+        >
+          <div className="flex items-center justify-between gap-2">
+            <label
+              className="text-xs font-bold uppercase tracking-wide text-zinc-400"
+              htmlFor="match-showdown-replay"
+            >
+              Partida de Showdown
+            </label>
+            {savedReplayUrl && (
+              <a
+                className="text-[10px] font-semibold text-sky-300 hover:text-sky-100"
+                href={savedReplayUrl}
+                rel="noreferrer"
+                target="_blank"
+              >
+                Abrir replay
+              </a>
+            )}
+          </div>
+          <input
+            autoComplete="url"
+            className="w-full rounded-lg border border-zinc-700 bg-zinc-900/80 px-3 py-2.5 text-sm text-white outline-none placeholder:text-zinc-600 focus:border-cyan-300/50"
+            id="match-showdown-replay"
+            maxLength={400}
+            onChange={(event) => setReplayUrl(event.target.value)}
+            placeholder="https://replay.pokemonshowdown.com/…"
+            type="url"
+            value={replayUrl}
+          />
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-[10px] leading-4 text-zinc-600">
+              Cuando terminéis, pega aquí el enlace del replay. Quedará en el historial.
+            </p>
+            <button
+              className="rounded-lg border border-cyan-300/35 bg-cyan-400/15 px-3 py-2 text-xs font-bold text-cyan-100 transition hover:bg-cyan-400/25 disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={savingReplay}
+              type="submit"
+            >
+              {savingReplay ? "Guardando…" : "Guardar replay"}
+            </button>
+          </div>
+        </form>
 
         <p className="border-t border-zinc-800 pt-3 text-xs leading-5 text-zinc-500">
           ¿Aún no tienes equipo?{" "}

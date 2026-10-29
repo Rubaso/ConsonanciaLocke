@@ -437,6 +437,48 @@ export async function DELETE(request: Request) {
   }
 
   const supabase = createSupabaseAdminClient();
+
+  if (body.kind === "individual-match") {
+    const existing = await supabase
+      .from("individual_matches")
+      .select("id,round_id")
+      .eq("id", body.id)
+      .maybeSingle();
+    if (existing.error) {
+      console.error("Failed to load individual match for delete:", existing.error.message);
+      return NextResponse.json({ error: "No se pudo borrar el combate." }, { status: 503 });
+    }
+    if (!existing.data) {
+      return NextResponse.json({ error: "No se encontró el combate." }, { status: 404 });
+    }
+    const deleteResponse = await supabase
+      .from("individual_matches")
+      .delete()
+      .eq("id", body.id)
+      .select("id")
+      .maybeSingle();
+    if (deleteResponse.error) {
+      console.error("Failed to delete individual match:", deleteResponse.error.message);
+      return NextResponse.json({ error: "No se pudo borrar el combate." }, { status: 503 });
+    }
+    if (existing.data.round_id) {
+      const pending = await supabase
+        .from("individual_matches")
+        .select("id")
+        .eq("round_id", existing.data.round_id)
+        .eq("status", "pending")
+        .limit(1);
+      if (!pending.error && (pending.data ?? []).length === 0) {
+        await supabase
+          .from("individual_match_rounds")
+          .update({ status: "completed" })
+          .eq("id", existing.data.round_id)
+          .eq("status", "published");
+      }
+    }
+    return NextResponse.json({ ok: true });
+  }
+
   const response =
     body.kind === "tournament"
       ? await supabase
@@ -446,11 +488,6 @@ export async function DELETE(request: Request) {
           .neq("status", "archived")
           .select("id")
           .maybeSingle()
-      : body.kind === "individual-match"
-      ? await supabase.rpc("delete_individual_match", {
-          p_match_id: body.id,
-          p_organizer_player_id: authorization.player.id,
-        })
       : body.kind === "individual-round"
         ? await supabase.rpc("delete_individual_match_round", {
             p_round_id: body.id,

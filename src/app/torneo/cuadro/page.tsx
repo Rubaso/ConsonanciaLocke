@@ -30,16 +30,24 @@ async function TournamentBracketContent() {
 
   return (
     <div className="space-y-6">
-      <header className="space-y-2">
-        <Link className="text-xs font-semibold text-amber-300 hover:text-amber-100" href="/torneo">
-          ← Competición
+      <header className="flex flex-wrap items-end justify-between gap-3">
+        <div className="space-y-2">
+          <Link className="text-xs font-semibold text-amber-300 hover:text-amber-100" href="/torneo">
+            ← Competición
+          </Link>
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-300">
+            Torneo gordo · Competición
+          </p>
+          <h1 className="text-3xl font-black tracking-tight text-zinc-100">
+            Cuadro del torneo
+          </h1>
+        </div>
+        <Link
+          className="rounded-lg border border-amber-300/30 px-4 py-2.5 text-sm font-semibold text-amber-100 transition hover:bg-amber-300/10"
+          href="/torneo/cuadro/historial"
+        >
+          Historial
         </Link>
-        <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-300">
-          Torneo gordo · Competición
-        </p>
-        <h1 className="text-3xl font-black tracking-tight text-zinc-100">
-          Cuadro del torneo
-        </h1>
       </header>
 
       {data.isOrganizer && (

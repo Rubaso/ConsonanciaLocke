@@ -38,19 +38,27 @@ async function IndividualMatchesContent() {
 
   return (
     <div className="space-y-6">
-      <header className="space-y-2">
-        <Link className="text-xs font-semibold text-cyan-300 hover:text-cyan-100" href="/torneo">
-          ← Competición
+      <header className="flex flex-wrap items-end justify-between gap-3">
+        <div className="space-y-2">
+          <Link className="text-xs font-semibold text-cyan-300 hover:text-cyan-100" href="/torneo">
+            ← Competición
+          </Link>
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-cyan-300">
+            Competición · Individual
+          </p>
+          <h1 className="text-3xl font-black tracking-tight text-zinc-100">
+            Combates individuales
+          </h1>
+          <p className="text-sm text-zinc-400">
+            Un combate entre dos jugadores. Mientras esté pendiente, les aparece en inicio.
+          </p>
+        </div>
+        <Link
+          className="rounded-lg border border-cyan-300/30 px-4 py-2.5 text-sm font-semibold text-cyan-100 transition hover:bg-cyan-300/10"
+          href="/torneo/individual/historial"
+        >
+          Historial
         </Link>
-        <p className="text-xs font-bold uppercase tracking-[0.2em] text-cyan-300">
-          Competición · Individual
-        </p>
-        <h1 className="text-3xl font-black tracking-tight text-zinc-100">
-          Combates individuales
-        </h1>
-        <p className="text-sm text-zinc-400">
-          Un combate entre dos jugadores. Mientras esté pendiente, les aparece en inicio.
-        </p>
       </header>
 
       {data.isOrganizer ? (

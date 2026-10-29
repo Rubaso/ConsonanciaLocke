@@ -58,7 +58,7 @@ export async function getTournamentManagementData(): Promise<TournamentManagemen
       : Promise.resolve({ data: [], error: null }),
     supabase
       .from("individual_matches")
-      .select("id,round_id,round_match_number,player_a_id,player_b_id,winner_player_id,status")
+      .select("id,round_id,round_match_number,player_a_id,player_b_id,winner_player_id,status,showdown_replay_url")
       .in(
         "status",
         isOrganizer
@@ -178,6 +178,8 @@ export async function getTournamentManagementData(): Promise<TournamentManagemen
       playerBId: match.player_b_id,
       winnerPlayerId: match.winner_player_id,
       status: match.status as IndividualMatchSummary["status"],
+      replayUrl:
+        typeof match.showdown_replay_url === "string" ? match.showdown_replay_url : null,
     }));
   const individualRounds: IndividualMatchRoundSummary[] =
     (individualRoundsResponse.data ?? []).map((round) => {

@@ -37,6 +37,7 @@ export type IndividualMatchSummary = {
   playerBId: string;
   winnerPlayerId: string | null;
   status: "draft" | "pending" | "completed" | "forfeit" | "cancelled";
+  replayUrl: string | null;
 };
 
 type ActivePlayer = TournamentPlayer;
@@ -536,21 +537,21 @@ export default function TournamentManager({
                                   <option value={match.playerBId}>{getPlayerName(round.players, match.playerBId)}</option>
                                 </select>
                               </label>
-                              {match.status === "pending" && (
-                                <button
-                                  className="rounded border border-rose-300/25 px-2 py-1.5 text-[10px] font-semibold text-rose-200 transition hover:bg-rose-300/10 disabled:opacity-50"
-                                  disabled={busy}
-                                  onClick={() => void deleteAction(
-                                    "individual-match",
-                                    match.id,
-                                    "¿Cancelar y borrar este combate pendiente de la ronda?",
-                                    "Combate cancelado y borrado.",
-                                  )}
-                                  type="button"
-                                >
-                                  Cancelar
-                                </button>
-                              )}
+                              <button
+                                className="rounded border border-rose-300/25 px-2 py-1.5 text-[10px] font-semibold text-rose-200 transition hover:bg-rose-300/10 disabled:opacity-50"
+                                disabled={busy}
+                                onClick={() => void deleteAction(
+                                  "individual-match",
+                                  match.id,
+                                  match.winnerPlayerId
+                                    ? "¿Borrar este combate aunque ya tenga ganador?"
+                                    : "¿Cancelar y borrar este combate pendiente de la ronda?",
+                                  "Combate borrado.",
+                                )}
+                                type="button"
+                              >
+                                Borrar
+                              </button>
                             </div>
                           ) : (
                             <p className="text-[10px] font-semibold text-teal-300">
@@ -583,6 +584,16 @@ export default function TournamentManager({
                     {" vs "}
                     {getPlayerName(activePlayers, match.playerBId)}
                   </p>
+                  {match.replayUrl && (
+                    <a
+                      className="mt-1 inline-flex text-[10px] font-bold text-sky-300 hover:text-sky-100"
+                      href={match.replayUrl}
+                      rel="noreferrer"
+                      target="_blank"
+                    >
+                      Ver partida
+                    </a>
+                  )}
                 </div>
                 {match.status !== "cancelled" ? (
                   <div className="flex items-center gap-2">
@@ -608,21 +619,21 @@ export default function TournamentManager({
                         <option value={match.playerBId}>{getPlayerName(activePlayers, match.playerBId)}</option>
                       </select>
                     </label>
-                    {match.status === "pending" && (
-                      <button
-                        className="rounded border border-rose-300/25 px-2 py-1.5 text-[10px] font-semibold text-rose-200 transition hover:bg-rose-300/10 disabled:opacity-50"
-                        disabled={busy}
-                        onClick={() => void deleteAction(
-                          "individual-match",
-                          match.id,
-                          "¿Cancelar y borrar este combate individual pendiente?",
-                          "Combate cancelado y borrado.",
-                        )}
-                        type="button"
-                      >
-                        Cancelar y borrar
-                      </button>
-                    )}
+                    <button
+                      className="rounded border border-rose-300/25 px-2 py-1.5 text-[10px] font-semibold text-rose-200 transition hover:bg-rose-300/10 disabled:opacity-50"
+                      disabled={busy}
+                      onClick={() => void deleteAction(
+                        "individual-match",
+                        match.id,
+                        match.winnerPlayerId
+                          ? "¿Borrar este combate aunque ya tenga ganador?"
+                          : "¿Cancelar y borrar este combate individual pendiente?",
+                        "Combate borrado.",
+                      )}
+                      type="button"
+                    >
+                      Borrar
+                    </button>
                   </div>
                 ) : (
                   <span className="text-[10px] font-semibold text-teal-300">Cancelado</span>

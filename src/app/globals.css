@@ -66,6 +66,25 @@ body {
   pointer-events: none;
 }
 
+@keyframes match-banner-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 18px rgb(34 211 238 / 22%),
+      0 0 0 1px rgb(34 211 238 / 18%);
+  }
+
+  50% {
+    box-shadow:
+      0 0 34px rgb(34 211 238 / 48%),
+      0 0 0 1px rgb(103 232 249 / 45%);
+  }
+}
+
+.match-pending-banner {
+  animation: match-banner-glow 2.6s ease-in-out infinite;
+}
+
 @keyframes medal-glow {
   0%,
   100% {

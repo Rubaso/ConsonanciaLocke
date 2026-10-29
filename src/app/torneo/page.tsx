@@ -99,7 +99,7 @@ export default function TournamentHomePage() {
         className="inline-flex rounded-lg border border-violet-300/25 px-4 py-2.5 text-sm font-semibold text-violet-100 transition hover:bg-violet-300/10"
         href="/torneo/historial"
       >
-        Ver historial de competiciones
+        Historial de concursos
       </Link>
     </main>
   );
