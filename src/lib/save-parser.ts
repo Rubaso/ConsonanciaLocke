@@ -2,6 +2,11 @@ import "server-only";
 
 import { loadAll } from "@hyrious/marshal";
 import { getRandomizedAbility } from "@/lib/consonancia-randomizer-abilities";
+import {
+  displayMarketItemName,
+  getMarketItem,
+  resolveMarketSlug,
+} from "@/lib/market-items";
 import { ROUTE_CATALOG } from "@/lib/route-catalog";
 
 export type ImportedPokemon = {
@@ -36,10 +41,21 @@ export type ImportedPokemon = {
   moves: string[];
 };
 
+export type ImportedBagPocket = "usable" | "held" | "ball" | "berry";
+
+export type ImportedBagItem = {
+  item_key: string;
+  item_name: string;
+  item_slug: string | null;
+  quantity: number;
+  pocket: ImportedBagPocket;
+};
+
 export type ParsedSave = {
   trainerName: string;
   gameTrainerName: string;
   pokemon: ImportedPokemon[];
+  bag: ImportedBagItem[];
   medalIds: number[];
   unknownMapIds: number[];
   hasStorage: boolean;
@@ -236,6 +252,205 @@ function importedAbility(value: unknown, randomizer: SaveRandomizerSettings) {
   );
 }
 
+function itemKeyFromSave(value: unknown) {
+  const text = valueText(value);
+  if (!text) return null;
+  const key = text.replace(/^:/, "").replace(/\s+/g, "_").toUpperCase();
+  return key.length >= 1 && key.length <= 80 ? key : null;
+}
+
+function isTechnicalMachine(key: string, name = "") {
+  return /^(TM|HM|MT|MO|TR)\s*\d+/i.test(key) || /^(TM|HM|MT|MO|TR)\s*\d+/i.test(name);
+}
+
+function pocketKind(
+  index: number,
+  pocketCount: number,
+  name: string,
+): ImportedBagPocket | "skip" {
+  const label = name.toLowerCase();
+  if (label.includes("key")) return "skip";
+  if (label.includes("mail") || label.includes("carta")) return "skip";
+  if (
+    /\btm\b/.test(label) ||
+    /\bmt\b/.test(label) ||
+    /\bhm\b/.test(label) ||
+    /\bmo\b/.test(label) ||
+    label.includes("máquina") ||
+    label.includes("maquina")
+  ) {
+    return "skip";
+  }
+  if (label.includes("battle") || label.includes("combate") || label.includes("equip")) {
+    return "held";
+  }
+  if (label.includes("ball") || label.includes("bola")) return "ball";
+  if (label.includes("berry") || label.includes("baya")) return "berry";
+  if (label.includes("medicine") || label.includes("medic") || label.includes("item")) {
+    return "usable";
+  }
+
+  if (pocketCount >= 8) {
+    const map: Array<ImportedBagPocket | "skip" | undefined> = [
+      undefined,
+      "usable",
+      "usable",
+      "ball",
+      "skip",
+      "berry",
+      "skip",
+      "held",
+      "skip",
+    ];
+    return map[index] ?? "usable";
+  }
+
+  const classic: Array<ImportedBagPocket | "skip"> = [
+    "usable",
+    "ball",
+    "skip",
+    "skip",
+    "berry",
+  ];
+  if (index >= 0 && index < classic.length) return classic[index];
+  if (index >= 1 && index - 1 < classic.length) return classic[index - 1];
+  return "usable";
+}
+
+function collectPocketEntries(pocket: unknown): Array<{ key: string; quantity: number }> {
+  if (!pocket) return [];
+
+  const contents =
+    getProperty(pocket, "contents") ??
+    getProperty(pocket, "list") ??
+    getProperty(pocket, "items") ??
+    getProperty(pocket, "data") ??
+    pocket;
+
+  const entries: Array<{ key: string; quantity: number }> = [];
+
+  function push(rawItem: unknown, rawQty: unknown) {
+    const key = itemKeyFromSave(rawItem);
+    const quantity = numberValue(rawQty);
+    if (!key || !/^[A-Z][A-Z0-9_]{0,79}$/.test(key) || quantity === null || quantity < 1) return;
+    entries.push({ key, quantity: Math.min(quantity, 999) });
+  }
+
+  if (contents instanceof Map) {
+    for (const [item, quantity] of contents) {
+      push(item, quantity);
+    }
+    return entries;
+  }
+
+  if (Array.isArray(contents)) {
+    for (const entry of contents) {
+      if (!entry) continue;
+      if (Array.isArray(entry) && entry.length >= 2) {
+        push(entry[0], entry[1]);
+        continue;
+      }
+      push(
+        getProperty(entry, "id") ?? getProperty(entry, "item") ?? entry,
+        getProperty(entry, "quantity") ??
+          getProperty(entry, "count") ??
+          getProperty(entry, "qty") ??
+          getProperty(entry, "amount"),
+      );
+    }
+    return entries;
+  }
+
+  if (isRecord(contents)) {
+    for (const key of Reflect.ownKeys(contents)) {
+      const label = typeof key === "symbol" ? key.description ?? "" : String(key);
+      if (label.startsWith("@") && !/^@?[A-Z0-9_]+$/.test(label.replace(/^@/, ""))) {
+        continue;
+      }
+      if (
+        /pocket|viewed|registered|ready|max_slots|selection/i.test(label)
+      ) {
+        continue;
+      }
+      push(typeof key === "symbol" ? key : label.replace(/^@/, ""), contents[key as keyof typeof contents]);
+    }
+  }
+
+  return entries;
+}
+
+function indexedPockets(pockets: unknown): Array<{ index: number; name: string; pocket: unknown }> {
+  if (pockets instanceof Map) {
+    return Array.from(pockets.entries()).flatMap(([key, pocket], order) => {
+      if (!pocket) return [];
+      const index = numberValue(key) ?? order;
+      return [{ index, name: valueText(key) ?? "", pocket }];
+    });
+  }
+
+  if (Array.isArray(pockets)) {
+    return pockets.flatMap((pocket, index) =>
+      pocket ? [{ index, name: "", pocket }] : [],
+    );
+  }
+
+  if (isRecord(pockets) && getProperty(pockets, "pockets")) {
+    return indexedPockets(getProperty(pockets, "pockets"));
+  }
+
+  if (isRecord(pockets)) {
+    return [{ index: 1, name: "", pocket: pockets }];
+  }
+
+  return [];
+}
+
+function bagItemsFromSave(save: unknown): ImportedBagItem[] {
+  const player = getProperty(save, "player");
+  const bag =
+    getProperty(save, "bag") ??
+    getProperty(save, "pokemon_bag") ??
+    getProperty(save, "PokemonBag") ??
+    getProperty(player, "bag") ??
+    getProperty(player, "pokemon_bag");
+
+  if (!bag) return [];
+
+  const pockets = getProperty(bag, "pockets") ?? getProperty(bag, "pocket") ?? bag;
+  const indexed = indexedPockets(pockets);
+  const pocketCount = Math.max(
+    indexed.length,
+    indexed.reduce((max, row) => Math.max(max, row.index), 0),
+  );
+
+  const merged = new Map<string, ImportedBagItem>();
+
+  for (const row of indexed) {
+    const kind = pocketKind(row.index, pocketCount, row.name);
+    if (kind === "skip") continue;
+    for (const entry of collectPocketEntries(row.pocket)) {
+      if (isTechnicalMachine(entry.key)) continue;
+      const slug = resolveMarketSlug(entry.key);
+      const catalog = getMarketItem(slug);
+      const current = merged.get(entry.key);
+      const quantity = Math.min((current?.quantity ?? 0) + entry.quantity, 999);
+      merged.set(entry.key, {
+        item_key: entry.key,
+        item_name:
+          catalog?.name ??
+          displayMarketItemName(slug, displayLabel(entry.key) ?? entry.key),
+        item_slug: slug,
+        quantity,
+        pocket: current?.pocket === "held" ? "held" : kind,
+      });
+    }
+  }
+
+  return Array.from(merged.values())
+    .sort((left, right) => left.item_name.localeCompare(right.item_name, "es"))
+    .slice(0, 400);
+}
+
 function storageCurrentBoxIndex(storage: unknown, boxCount: number) {
   if (boxCount <= 0) return null;
   for (const name of [
@@ -411,6 +626,7 @@ export function parseConsonanciaSave(data: Uint8Array): ParsedSave {
     trainerName: trainerName.slice(0, 60),
     gameTrainerName: trainerName.slice(0, 60),
     pokemon: Array.from(pokemonByIdentity.values()),
+    bag: bagItemsFromSave(save),
     medalIds,
     unknownMapIds,
     hasStorage,

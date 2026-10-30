@@ -8,6 +8,7 @@ import { getCurrentPlayer } from "@/lib/auth";
 import { getSupabaseConfiguration } from "@/lib/supabase/admin";
 import { matchesPlayerSearch } from "@/lib/player-search";
 import type { PlayerCardData } from "@/lib/supabase/player-data";
+import { playerBoxPath } from "@/lib/player-box-path";
 import { getPlayersPageData } from "@/lib/supabase/player-data";
 
 export const metadata = {
@@ -45,7 +46,7 @@ function PlayerCard({
 
   return (
     <Link
-      href={`/jugadores/${player.id}`}
+      href={playerBoxPath(player.username)}
       className="group block rounded-xl transition hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan-300"
     >
       <article

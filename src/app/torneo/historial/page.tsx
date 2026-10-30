@@ -37,7 +37,7 @@ async function CompetitionHistoryContent() {
   const isOrganizer = player?.role === "organizer";
 
   return (
-    <main className="mx-auto w-full max-w-5xl space-y-10">
+    <div className="mx-auto w-full max-w-5xl space-y-10">
       <header className="space-y-2">
         <Link className="text-xs font-semibold text-violet-300 hover:text-violet-100" href="/torneo">
           ← Competición
@@ -255,7 +255,7 @@ async function CompetitionHistoryContent() {
           </div>
         )}
       </section>
-    </main>
+    </div>
   );
 }
 

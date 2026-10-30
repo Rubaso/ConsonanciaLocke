@@ -57,7 +57,7 @@ const toneClass = {
 
 export default function TournamentHomePage() {
   return (
-    <main className="mx-auto w-full max-w-5xl space-y-8">
+    <div className="mx-auto w-full max-w-5xl space-y-8">
       <header className="space-y-2">
         <p className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-500">
           Pokémon Consonancia by EK esports
@@ -101,6 +101,6 @@ export default function TournamentHomePage() {
       >
         Historial de concursos
       </Link>
-    </main>
+    </div>
   );
 }

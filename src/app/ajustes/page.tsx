@@ -15,7 +15,7 @@ async function SettingsContent() {
   if (!player) redirect("/login");
 
   return (
-    <main className="mx-auto max-w-2xl space-y-6">
+    <div className="mx-auto max-w-2xl space-y-6">
       <header className="space-y-2">
         <p className="text-xs font-bold uppercase tracking-[0.2em] text-violet-300">
           Cuenta de jugador
@@ -30,7 +30,7 @@ async function SettingsContent() {
         initialTwitchUsername={player.twitchUsername}
         initialTrainerSprite={player.trainerSprite}
       />
-    </main>
+    </div>
   );
 }
 

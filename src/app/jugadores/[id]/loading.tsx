@@ -37,7 +37,7 @@ function PokemonSectionSkeleton({
 
 export default function PlayerBoxLoading() {
   return (
-    <main aria-label="Cargando caja del jugador" aria-busy="true" className="space-y-6">
+    <div aria-label="Cargando caja del jugador" aria-busy="true" className="space-y-6">
       <span
         aria-hidden="true"
         className="inline-flex h-5 w-32 animate-pulse rounded bg-zinc-800"
@@ -55,6 +55,6 @@ export default function PlayerBoxLoading() {
         <PokemonSectionSkeleton title="Capturas" titleColor="text-teal-300" />
         <PokemonSectionSkeleton title="Caídos" titleColor="text-rose-400" count={6} />
       </div>
-    </main>
+    </div>
   );
 }

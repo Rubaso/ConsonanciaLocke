@@ -15,14 +15,14 @@ async function ImportSaveContent() {
   if (!player) redirect("/login");
 
   return (
-    <main className="mx-auto max-w-3xl space-y-6">
+    <div className="mx-auto max-w-3xl space-y-6">
       <header className="space-y-2">
         <p className="text-xs font-bold uppercase tracking-[0.2em] text-cyan-300">
           {player.displayName}
         </p>
         <h1 className="text-3xl font-black text-white">Importar save</h1>
         <p className="text-sm text-slate-400">
-          Carga tu partida de Pokémon Consonancia para importar tu equipo, las cajas y las medallas.
+          Carga tu partida de Pokémon Consonancia para importar tu equipo, las cajas, la mochila y las medallas.
         </p>
       </header>
 
@@ -34,7 +34,8 @@ async function ImportSaveContent() {
         <p className="text-amber-100/80">
           Los Pokémon de las dos últimas cajas del PC se importarán como caídos. El save no guarda
           una fecha o lugar de caída, así que la fecha registrada será la de importación y el lugar
-          de caída quedará sin indicar. No se guarda el archivo bruto.
+          de caída quedará sin indicar. También se importa la mochila (usables y equipables; no
+          objetos clave, cartas ni MTs). No se guarda el archivo bruto.
         </p>
       </aside>
 
@@ -59,7 +60,7 @@ async function ImportSaveContent() {
       </aside>
 
       <SaveImportForm />
-    </main>
+    </div>
   );
 }
 

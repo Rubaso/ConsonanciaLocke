@@ -11,6 +11,7 @@ type ImportResult = {
   unknownMapIds: number[];
   hasStorage: boolean;
   pokemonInDeadBoxes: number;
+  bagItems: number;
 };
 
 export default function SaveImportForm() {
@@ -48,7 +49,8 @@ export default function SaveImportForm() {
         typeof responseBody.medalsAdded !== "number" ||
         !Array.isArray(responseBody.unknownMapIds) ||
         typeof responseBody.hasStorage !== "boolean" ||
-        typeof responseBody.pokemonInDeadBoxes !== "number"
+        typeof responseBody.pokemonInDeadBoxes !== "number" ||
+        typeof responseBody.bagItems !== "number"
       ) {
         setError("El servidor respondió con un resultado no válido.");
         return;
@@ -126,6 +128,10 @@ export default function SaveImportForm() {
             <div>
               <dt className="text-slate-500">En las cajas de caídos</dt>
               <dd className="mt-1 font-semibold text-rose-200">{result.pokemonInDeadBoxes}</dd>
+            </div>
+            <div>
+              <dt className="text-slate-500">Objetos de mochila</dt>
+              <dd className="mt-1 font-semibold text-slate-100">{result.bagItems}</dd>
             </div>
           </dl>
           {result.unknownMapIds.length > 0 && (

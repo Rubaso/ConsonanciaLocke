@@ -17,8 +17,11 @@ import { getPlayerPokepasteProfile } from "@/lib/supabase/player-pokepaste-profi
 import PokemonSprite from "@/components/PokemonSprite";
 import { getRecentShinyAnnouncements } from "@/lib/supabase/shiny-announcement";
 import { isContestResultsBannerVisible } from "@/lib/contest-results";
+import { isMarketRocketOpeningBannerVisible } from "@/lib/market-opening";
 import RecentMatchResults from "@/components/RecentMatchResults";
 import { getRecentMatchResults } from "@/lib/supabase/recent-match-results";
+import PendingMarketOffers from "@/components/PendingMarketOffers";
+import { getPendingMarketOffers } from "@/lib/supabase/market-data";
 
 async function ActivitySection() {
   await connection();
@@ -582,6 +585,53 @@ async function ShortContestBanner() {
   );
 }
 
+async function PendingMarketOffersSection() {
+  await connection();
+  const offers = await getPendingMarketOffers();
+  return <PendingMarketOffers offers={offers} />;
+}
+
+async function MarketRocketOpeningBanner() {
+  await connection();
+  if (!isMarketRocketOpeningBannerVisible()) return null;
+
+  return (
+    <Link
+      href="/mercado"
+      aria-label="El Mercado Rocket abre sus puertas"
+      className="group relative isolate flex min-h-56 w-full items-center justify-center overflow-hidden rounded-[3px] border border-rose-400/50 bg-zinc-950 px-4 py-10 outline-none transition-all duration-300 hover:border-rose-200 hover:shadow-[0_0_40px_rgba(244,63,94,0.45)] focus-visible:ring-2 focus-visible:ring-rose-300 sm:min-h-72 sm:px-8 sm:py-14"
+    >
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 z-0 bg-cover bg-[right_center] transition-transform duration-700 ease-out group-hover:scale-105"
+        style={{
+          backgroundImage: "url('/FondoMercado/mercado-rocket-fondo.jpg')",
+        }}
+      />
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 z-0 bg-gradient-to-r from-black/55 via-black/20 to-transparent"
+      />
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 z-0 bg-gradient-to-t from-black/70 via-transparent to-black/35"
+      />
+      <div className="relative z-10 max-w-3xl text-center">
+        <p className="text-[11px] font-black uppercase tracking-[0.42em] text-rose-300">
+          Team Rocket
+        </p>
+        <h2 className="mt-3 text-3xl font-black uppercase leading-[0.95] tracking-tight text-white drop-shadow-[0_2px_24px_rgba(0,0,0,0.85)] sm:text-5xl md:text-6xl">
+          El Mercado Rocket
+          <span className="mt-2 block text-rose-200">abre sus puertas</span>
+        </h2>
+        <p className="mt-4 text-sm font-semibold uppercase tracking-[0.22em] text-fuchsia-100/90">
+          Entra a comerciar
+        </p>
+      </div>
+    </Link>
+  );
+}
+
 export default function Home() {
   return (
     <div className="space-y-6">
@@ -592,6 +642,14 @@ export default function Home() {
         </h1>
         <p className="text-sm text-zinc-400">Centro informativo de la partida.</p>
       </section>
+
+      <Suspense fallback={null}>
+        <MarketRocketOpeningBanner />
+      </Suspense>
+
+      <Suspense fallback={null}>
+        <PendingMarketOffersSection />
+      </Suspense>
 
       <Suspense fallback={<ShinyAnnouncementLoading />}>
         <ShinyAnnouncementSection />

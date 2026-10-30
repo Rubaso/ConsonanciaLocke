@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState, useSyncExternalStore } from "react";
@@ -175,9 +176,17 @@ export default function SiteHeader() {
     () => true,
     () => false,
   );
+  const mercadoActive =
+    hasMounted && (pathname === "/mercado" || pathname.startsWith("/mercado/"));
 
   return (
-    <header className="sticky top-0 z-40 border-b border-violet-300/15 bg-[#090d1b]/85 shadow-lg shadow-violet-950/20 backdrop-blur-xl">
+    <header
+      className={`sticky top-0 z-40 border-b shadow-lg backdrop-blur-xl ${
+        mercadoActive
+          ? "border-rose-400/20 bg-black/25 shadow-rose-950/30"
+          : "border-violet-300/15 bg-[#090d1b]/85 shadow-violet-950/20"
+      }`}
+    >
       <div className="mx-auto grid w-full max-w-[1600px] grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-3 px-4 py-3 sm:gap-4 sm:px-6 lg:px-8">
         <Link
           href="/"
@@ -186,7 +195,39 @@ export default function SiteHeader() {
           EKLOCKE
         </Link>
         <TwitchLiveIndicator />
-        <nav
+        <div className="flex min-w-0 items-center justify-end gap-2 sm:gap-3">
+          <Link
+            href="/mercado"
+            aria-label="Mercado Rocket"
+            title="Mercado Rocket"
+            aria-current={
+              hasMounted &&
+              (pathname === "/mercado" || pathname.startsWith("/mercado/"))
+                ? "page"
+                : undefined
+            }
+            className={`flex shrink-0 items-center gap-2 overflow-hidden rounded-xl border px-2 py-1 text-xs font-black uppercase tracking-[0.14em] transition sm:px-2.5 ${
+              hasMounted &&
+              (pathname === "/mercado" || pathname.startsWith("/mercado/"))
+                ? "border-rose-300 bg-gradient-to-r from-rose-600 via-fuchsia-600 to-rose-500 text-white"
+                : "border-rose-400/70 bg-gradient-to-r from-zinc-950 via-rose-950 to-fuchsia-950 text-rose-100 hover:border-rose-200 hover:from-rose-700 hover:via-fuchsia-700 hover:to-rose-600 hover:text-white"
+            }`}
+          >
+            <Image
+              src="/FondoMercado/team-rocket-r.png"
+              alt=""
+              width={36}
+              height={36}
+              className="h-8 w-8 rounded-[2px] object-contain sm:h-9 sm:w-9"
+            />
+            <span className="relative hidden leading-tight sm:block">
+              Mercado
+              <span className="block text-[10px] tracking-[0.22em] text-rose-200/90">
+                Rocket
+              </span>
+            </span>
+          </Link>
+          <nav
           aria-label="Navegación principal"
           className="overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
@@ -232,6 +273,7 @@ export default function SiteHeader() {
             })}
           </div>
         </nav>
+        </div>
         <HeaderSession />
       </div>
     </header>

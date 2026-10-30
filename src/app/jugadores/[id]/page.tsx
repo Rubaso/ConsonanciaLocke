@@ -1,11 +1,16 @@
 import Link from "next/link";
 import { connection } from "next/server";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import AbilityTooltip from "@/components/AbilityTooltip";
 import PokemonSprite from "@/components/PokemonSprite";
 import ReviveFallenButton from "@/components/ReviveFallenButton";
 import TrainerSpriteAvatar from "@/components/TrainerSpriteAvatar";
 import { getCurrentPlayer } from "@/lib/auth";
+import {
+  isPlayerBoxLookup,
+  PLAYER_ID_PATTERN,
+  playerBoxPath,
+} from "@/lib/player-box-path";
 import {
   getPlayerBoxPageData,
   type PlayerBoxPokemon,
@@ -15,9 +20,6 @@ export const metadata = {
   title: "Caja del jugador | EKLOCKE",
   description: "Pokémon del jugador en Pokémon Consonancia.",
 };
-
-const uuidPattern =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 function PokemonCard({
   pokemon,
@@ -110,17 +112,21 @@ async function PlayerBoxContent({
 }) {
   await connection();
   const { id } = await params;
-  if (!uuidPattern.test(id)) notFound();
+  const lookup = decodeURIComponent(id);
+  if (!isPlayerBoxLookup(lookup)) notFound();
 
   const [data, viewer] = await Promise.all([
-    getPlayerBoxPageData(id),
+    getPlayerBoxPageData(lookup),
     getCurrentPlayer().catch(() => null),
   ]);
   if (data.status === "not-found") notFound();
+  if (data.status === "ready" && PLAYER_ID_PATTERN.test(lookup)) {
+    redirect(playerBoxPath(data.player.username));
+  }
 
   if (data.status !== "ready") {
     return (
-      <main className="space-y-5">
+      <div className="space-y-5">
         <Link
           href="/jugadores"
           className="inline-flex text-sm font-semibold text-cyan-300 hover:text-cyan-200"
@@ -144,7 +150,7 @@ async function PlayerBoxContent({
             </p>
           )}
         </section>
-      </main>
+      </div>
     );
   }
 
@@ -161,7 +167,7 @@ async function PlayerBoxContent({
   );
 
   return (
-    <main className="space-y-6">
+    <div className="space-y-6">
       <Link
         href="/jugadores"
         className="inline-flex text-sm font-semibold text-cyan-300 hover:text-cyan-200"
@@ -238,7 +244,7 @@ async function PlayerBoxContent({
           </p>
         </section>
       )}
-    </main>
+    </div>
   );
 }
 

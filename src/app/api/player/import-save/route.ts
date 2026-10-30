@@ -76,12 +76,21 @@ export async function POST(request: Request) {
   }
 
   const supabase = createSupabaseAdminClient();
-  const importResponse = await supabase.rpc("import_player_save_with_dead_boxes", {
+  const importArgs = {
     p_player_id: player.id,
     p_pokemon: save.pokemon,
     p_medal_ids: save.medalIds,
     p_game_trainer_id: save.gameTrainerName,
+  };
+  let importResponse = await supabase.rpc("import_player_save_with_dead_boxes", {
+    ...importArgs,
+    p_bag: save.bag,
   });
+
+  if (importResponse.error) {
+    console.error("Failed to import Consonancia save with bag:", importResponse.error.message);
+    importResponse = await supabase.rpc("import_player_save_with_dead_boxes", importArgs);
+  }
 
   if (importResponse.error) {
     console.error("Failed to import Consonancia save:", importResponse.error.message);
@@ -105,10 +114,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "La importación terminó con una respuesta no válida." }, { status: 503 });
   }
 
+  const bagItems =
+    "bagItems" in summary && typeof summary.bagItems === "number"
+      ? summary.bagItems
+      : 0;
+
   return NextResponse.json({
     ok: true,
     trainerName: save.trainerName,
     ...summary,
+    bagItems,
     unknownMapIds: save.unknownMapIds,
     hasStorage: save.hasStorage,
   });

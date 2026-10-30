@@ -9,6 +9,7 @@ import {
   isTwitchConfigured,
 } from "@/lib/twitch/live-status";
 import { isTrainerSpriteName } from "@/lib/trainer-sprites";
+import { PLAYER_ID_PATTERN } from "@/lib/player-box-path";
 
 export type PlayerCardData = {
   id: string;
@@ -374,7 +375,7 @@ export async function getPlayersPageData(): Promise<PlayersPageData> {
 }
 
 export async function getPlayerBoxPageData(
-  playerId: string,
+  lookup: string,
 ): Promise<PlayerBoxPageData> {
   const configuration = getSupabaseConfiguration();
   if (configuration.status === "not-configured") {
@@ -385,12 +386,19 @@ export async function getPlayerBoxPageData(
   }
 
   const supabase = createSupabaseAdminClient();
-  const playerResponse = await supabase
+  let playerQuery = supabase
     .from("players")
     .select("id,username,display_name,game_trainer_name,trainer_sprite,color")
-    .eq("id", playerId)
-    .eq("is_active", true)
-    .maybeSingle();
+    .eq("is_active", true);
+
+  playerQuery = PLAYER_ID_PATTERN.test(lookup)
+    ? playerQuery.eq("id", lookup)
+    : playerQuery.ilike(
+        "username",
+        lookup.replace(/\\/g, "\\\\").replace(/%/g, "\\%").replace(/_/g, "\\_"),
+      );
+
+  const playerResponse = await playerQuery.maybeSingle();
 
   if (playerResponse.error) {
     console.error("Failed to load Consonancia player:", playerResponse.error.message);
