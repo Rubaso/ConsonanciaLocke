@@ -236,6 +236,29 @@ function importedAbility(value: unknown, randomizer: SaveRandomizerSettings) {
   );
 }
 
+function storageCurrentBoxIndex(storage: unknown, boxCount: number) {
+  if (boxCount <= 0) return null;
+  for (const name of [
+    "current_index",
+    "currentIndex",
+    "current_box",
+    "currentBox",
+    "current",
+    "box_index",
+  ]) {
+    const value = numberValue(getProperty(storage, name));
+    if (value !== null && value >= 0 && value < boxCount) return value;
+  }
+  return null;
+}
+
+function isGraveBox(boxIndex: number, boxCount: number, currentBoxIndex: number | null) {
+  if (boxCount < 3) return false;
+  if (boxIndex < boxCount - 2) return false;
+  if (currentBoxIndex !== null && boxIndex === currentBoxIndex) return false;
+  return true;
+}
+
 function normalizePokemon(
   value: unknown,
   trainerId: string,
@@ -343,12 +366,13 @@ export function parseConsonanciaSave(data: Uint8Array): ParsedSave {
   const storage = getProperty(save, "storage_system");
   const boxes = getProperty(storage, "boxes");
   const hasStorage = Array.isArray(boxes);
+  const currentBoxIndex = storageCurrentBoxIndex(storage, Array.isArray(boxes) ? boxes.length : 0);
   if (Array.isArray(boxes)) {
     for (const [boxIndex, box] of boxes.entries()) {
       const boxPokemon = getProperty(box, "pokemon");
       if (!Array.isArray(boxPokemon)) continue;
+      const isDeadBox = isGraveBox(boxIndex, boxes.length, currentBoxIndex);
       for (const pokemon of boxPokemon) {
-        const isDeadBox = boxIndex >= Math.max(0, boxes.length - 2);
         const imported = normalizePokemon(
           pokemon,
           trainerId,

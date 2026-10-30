@@ -3,7 +3,9 @@ import { connection } from "next/server";
 import { notFound } from "next/navigation";
 import AbilityTooltip from "@/components/AbilityTooltip";
 import PokemonSprite from "@/components/PokemonSprite";
+import ReviveFallenButton from "@/components/ReviveFallenButton";
 import TrainerSpriteAvatar from "@/components/TrainerSpriteAvatar";
+import { getCurrentPlayer } from "@/lib/auth";
 import {
   getPlayerBoxPageData,
   type PlayerBoxPokemon,
@@ -17,7 +19,13 @@ export const metadata = {
 const uuidPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-function PokemonCard({ pokemon }: { pokemon: PlayerBoxPokemon }) {
+function PokemonCard({
+  pokemon,
+  canRevive = false,
+}: {
+  pokemon: PlayerBoxPokemon;
+  canRevive?: boolean;
+}) {
   return (
     <li
       className={`relative flex w-24 shrink-0 flex-col items-center rounded-lg border p-2 text-center ${
@@ -52,6 +60,12 @@ function PokemonCard({ pokemon }: { pokemon: PlayerBoxPokemon }) {
         {pokemon.nickname || pokemon.species}
       </p>
       <AbilityTooltip ability={pokemon.ability} />
+      {canRevive && pokemon.status === "dead" && (
+        <ReviveFallenButton
+          label={pokemon.nickname || pokemon.species}
+          pokemonId={pokemon.id}
+        />
+      )}
     </li>
   );
 }
@@ -60,10 +74,12 @@ function PokemonSection({
   title,
   pokemon,
   status,
+  canRevive = false,
 }: {
   title: string;
   pokemon: PlayerBoxPokemon[];
   status: PlayerBoxPokemon["status"];
+  canRevive?: boolean;
 }) {
   return (
     <section aria-label={title}>
@@ -77,7 +93,7 @@ function PokemonSection({
       {pokemon.length > 0 ? (
         <ul className="flex flex-wrap gap-2">
           {pokemon.map((entry) => (
-            <PokemonCard key={entry.id} pokemon={entry} />
+            <PokemonCard canRevive={canRevive} key={entry.id} pokemon={entry} />
           ))}
         </ul>
       ) : (
@@ -96,7 +112,10 @@ async function PlayerBoxContent({
   const { id } = await params;
   if (!uuidPattern.test(id)) notFound();
 
-  const data = await getPlayerBoxPageData(id);
+  const [data, viewer] = await Promise.all([
+    getPlayerBoxPageData(id),
+    getCurrentPlayer().catch(() => null),
+  ]);
   if (data.status === "not-found") notFound();
 
   if (data.status !== "ready") {
@@ -130,6 +149,8 @@ async function PlayerBoxContent({
   }
 
   const { player } = data;
+  const canRevive =
+    viewer?.role === "organizer" || viewer?.id === player.id;
   const fallenCount = player.pokemon.filter(
     (pokemon) => pokemon.status === "dead",
   ).length;
@@ -190,7 +211,12 @@ async function PlayerBoxContent({
             <PokemonSection title="Capturas" pokemon={captures} status="alive" />
           )}
           {fallen.length > 0 && (
-            <PokemonSection title="Caídos" pokemon={fallen} status="dead" />
+            <PokemonSection
+              canRevive={canRevive}
+              pokemon={fallen}
+              status="dead"
+              title="Caídos"
+            />
           )}
           {otherPokemon.length > 0 && (
             <section aria-label="Liberados e intercambiados">
