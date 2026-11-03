@@ -22,13 +22,17 @@ import RecentMatchResults from "@/components/RecentMatchResults";
 import { getRecentMatchResults } from "@/lib/supabase/recent-match-results";
 import PendingMarketOffers from "@/components/PendingMarketOffers";
 import { getPendingMarketOffers } from "@/lib/supabase/market-data";
+import {
+  MYSTERY_EVENT_TEASER,
+  WEEK_TWO_EVENTS,
+} from "@/lib/week-two-events";
 
 async function ActivitySection() {
   await connection();
   const activity = await getActivityPageData();
 
   return (
-    <div className="overflow-hidden rounded-xl border border-zinc-800 bg-slate-950/60">
+    <div className="overflow-hidden rounded-md border border-zinc-800 bg-slate-950/60">
       {activity.status === "ready" ? (
         <ActivityFeed initialData={activity} />
       ) : activity.status === "not-configured" ? (
@@ -81,7 +85,7 @@ async function ShinyAnnouncementSection() {
       {announcements.map((announcement) => (
         <aside
           aria-label={`Captura shiny de ${announcement.pokemonName}`}
-          className="flex min-w-0 items-center gap-3 rounded-xl border border-sky-300/40 bg-sky-950/45 px-4 py-3 shadow-lg shadow-sky-950/20"
+          className="flex min-w-0 items-center gap-3 rounded-md border border-sky-300/40 bg-sky-950/45 px-4 py-3 shadow-lg shadow-sky-950/20"
           key={announcement.id}
           role="status"
         >
@@ -125,7 +129,7 @@ function ShinyAnnouncementLoading() {
     <div
       aria-label="Comprobando capturas shiny"
       aria-busy="true"
-      className="h-24 animate-pulse rounded-xl border border-sky-300/15 bg-sky-950/20"
+      className="h-24 animate-pulse rounded-md border border-sky-300/15 bg-sky-950/20"
     />
   );
 }
@@ -135,7 +139,7 @@ function ActivityLoading() {
     <div
       aria-label="Cargando actividad"
       aria-busy="true"
-      className="h-52 animate-pulse rounded-xl border border-zinc-800 bg-slate-950/60"
+      className="h-52 animate-pulse rounded-md border border-zinc-800 bg-slate-950/60"
     />
   );
 }
@@ -169,7 +173,7 @@ async function PlayerMatchSection() {
       <MatchNotice>
         <p>Inicia sesión para consultar tu combate y compartir tu equipo.</p>
         <Link
-          className="mt-3 inline-flex rounded-lg border border-cyan-300/30 px-3 py-2 text-xs font-bold text-cyan-100 transition hover:bg-cyan-300/10"
+          className="mt-3 inline-flex rounded-md border border-cyan-300/30 px-3 py-2 text-xs font-bold text-cyan-100 transition hover:bg-cyan-300/10"
           href="/login"
         >
           Iniciar sesión
@@ -283,7 +287,7 @@ function MatchNotice({
   return (
     <section
       aria-labelledby="match-panel-heading"
-      className="rounded-xl border border-cyan-300/20 bg-slate-950/75 p-4"
+      className="rounded-md border border-cyan-300/20 bg-slate-950/75 p-4"
       role={role}
     >
       <p
@@ -302,8 +306,83 @@ function MatchLoading() {
     <section
       aria-label="Cargando tu combate"
       aria-busy="true"
-      className="h-80 animate-pulse rounded-xl border border-cyan-300/20 bg-slate-950/75"
+      className="h-80 animate-pulse rounded-md border border-cyan-300/20 bg-slate-950/75"
     />
+  );
+}
+
+function WeekTwoEventsBanner() {
+  return (
+    <section className="space-y-5">
+      <div>
+        <p className="text-[10px] font-black uppercase tracking-[0.24em] text-amber-300">
+          Semana 2 · Tramo 2 · del 2 al 9 de noviembre de 2026
+        </p>
+        <h2 className="mt-2 text-3xl font-black uppercase tracking-tight text-white drop-shadow sm:text-4xl">
+          Eventos activos
+        </h2>
+      </div>
+      <div className="grid gap-5 md:grid-cols-3">
+        {WEEK_TWO_EVENTS.map((event) => (
+          <Link
+            aria-label={`Ver evento ${event.name}`}
+            className="group relative isolate flex min-h-64 flex-col justify-end overflow-hidden rounded-md border-2 border-transparent p-4 transition duration-300 hover:-translate-y-1 hover:border-amber-200/80 hover:shadow-[0_0_30px_rgba(251,191,36,0.35)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-200"
+            href={`/torneo/eventos/${event.slug}`}
+            key={event.slug}
+          >
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 z-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
+              style={{ backgroundImage: `url('${event.backgroundImage}')` }}
+            />
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 z-0 bg-gradient-to-t from-zinc-950/95 via-zinc-950/55 to-zinc-950/10"
+            />
+            <div className="relative z-10">
+              <p className="text-base font-black text-white">{event.name}</p>
+              <p className="mt-2 text-sm leading-5 text-zinc-100/90">
+                {event.summary}
+              </p>
+              <p className="mt-3 text-xs font-bold uppercase tracking-widest text-amber-100">
+                Ver evento →
+              </p>
+            </div>
+          </Link>
+        ))}
+        <div
+          aria-label="Evento misterioso"
+          className="group relative isolate flex min-h-64 flex-col justify-end overflow-hidden rounded-md border-2 border-transparent p-4 transition duration-300 hover:-translate-y-1 hover:border-red-400/80 hover:shadow-[0_0_34px_rgba(239,68,68,0.4)] focus-within:border-red-400/80"
+          role="group"
+        >
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 z-0 bg-zinc-950 bg-[length:95%_auto] bg-[position:center_85%] bg-no-repeat transition-transform duration-700 group-hover:scale-[1.03]"
+            style={{ backgroundImage: "url('/FondoEventos/EnigmaCarmesi.png')" }}
+          />
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 z-0 bg-gradient-to-t from-zinc-950/90 via-transparent to-transparent"
+          />
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 z-0 bg-[linear-gradient(to_right,#09090b_0%,transparent_18%,transparent_82%,#09090b_100%)]"
+          />
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 z-0 bg-[radial-gradient(ellipse_at_center,rgba(248,113,113,0.3),rgba(220,38,38,0.12)_45%,transparent_75%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100 group-focus-visible:opacity-100"
+          />
+          <div className="relative z-10">
+            <p className="text-base font-black tracking-[0.12em] text-white">
+              {MYSTERY_EVENT_TEASER.name}
+            </p>
+            <p className="mt-2 text-sm font-bold tracking-[0.18em] text-red-100">
+              {MYSTERY_EVENT_TEASER.summary}
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -334,7 +413,7 @@ async function TournamentBanner() {
   return (
     <Link
       href="/torneo/cuadro"
-      className="group relative isolate flex min-h-32 w-full items-end overflow-hidden rounded-2xl border border-amber-300/50 bg-zinc-950 p-4 outline-none transition-all duration-300 hover:border-amber-200 hover:shadow-[0_0_22px_rgba(251,191,36,0.35)] focus-visible:ring-2 focus-visible:ring-amber-300 sm:min-h-40 sm:p-5"
+      className="group relative isolate flex min-h-32 w-full items-end overflow-hidden rounded-md border border-amber-300/50 bg-zinc-950 p-4 outline-none transition-all duration-300 hover:border-amber-200 hover:shadow-[0_0_22px_rgba(251,191,36,0.35)] focus-visible:ring-2 focus-visible:ring-amber-300 sm:min-h-40 sm:p-5"
       aria-label="Ir al cuadro del torneo de Consonancia"
     >
       <div
@@ -393,7 +472,7 @@ async function FishingContestBanner() {
     return (
       <Link
         href="/pesca/elegir"
-        className="group relative isolate flex min-h-32 w-full items-end overflow-hidden rounded-2xl border border-cyan-300/50 bg-zinc-950 p-4 outline-none transition-all duration-300 hover:border-cyan-200 hover:shadow-[0_0_22px_rgba(34,211,238,0.35)] focus-visible:ring-2 focus-visible:ring-cyan-300 sm:min-h-40 sm:p-5"
+        className="group relative isolate flex min-h-32 w-full items-end overflow-hidden rounded-md border border-cyan-300/50 bg-zinc-950 p-4 outline-none transition-all duration-300 hover:border-cyan-200 hover:shadow-[0_0_22px_rgba(34,211,238,0.35)] focus-visible:ring-2 focus-visible:ring-cyan-300 sm:min-h-40 sm:p-5"
         aria-label="Elige tu pesca para el concurso"
       >
         <div
@@ -442,7 +521,7 @@ async function FishingContestBanner() {
   return (
     <Link
       href="/pesca"
-      className="group relative isolate flex min-h-16 w-full items-center overflow-hidden rounded-xl border border-cyan-300/40 bg-zinc-950 px-4 py-3 outline-none transition-all duration-300 hover:border-cyan-200 hover:shadow-[0_0_16px_rgba(34,211,238,0.25)] focus-visible:ring-2 focus-visible:ring-cyan-300 sm:min-h-20 sm:px-5"
+      className="group relative isolate flex min-h-16 w-full items-center overflow-hidden rounded-md border border-cyan-300/40 bg-zinc-950 px-4 py-3 outline-none transition-all duration-300 hover:border-cyan-200 hover:shadow-[0_0_16px_rgba(34,211,238,0.25)] focus-visible:ring-2 focus-visible:ring-cyan-300 sm:min-h-20 sm:px-5"
       aria-label="Ver resultados del concurso de pesca"
     >
       <div
@@ -465,7 +544,7 @@ async function FishingContestBanner() {
             Ver resultados
           </h2>
         </div>
-        <span className="rounded-lg border border-cyan-200/40 bg-cyan-300/15 px-3 py-1.5 text-[11px] font-black uppercase tracking-wide text-cyan-50">
+        <span className="rounded-md border border-cyan-200/40 bg-cyan-300/15 px-3 py-1.5 text-[11px] font-black uppercase tracking-wide text-cyan-50">
           Clasificación
         </span>
       </div>
@@ -505,7 +584,7 @@ async function ShortContestBanner() {
     return (
       <Link
         href="/bajitos/elegir"
-        className="group relative isolate flex min-h-32 w-full items-end overflow-hidden rounded-2xl border border-fuchsia-300/50 bg-zinc-950 p-4 outline-none transition-all duration-300 hover:border-fuchsia-200 hover:shadow-[0_0_22px_rgba(232,121,249,0.35)] focus-visible:ring-2 focus-visible:ring-fuchsia-300 sm:min-h-40 sm:p-5"
+        className="group relative isolate flex min-h-32 w-full items-end overflow-hidden rounded-md border border-fuchsia-300/50 bg-zinc-950 p-4 outline-none transition-all duration-300 hover:border-fuchsia-200 hover:shadow-[0_0_22px_rgba(232,121,249,0.35)] focus-visible:ring-2 focus-visible:ring-fuchsia-300 sm:min-h-40 sm:p-5"
         aria-label="Elige tu bajito para el concurso"
       >
         <div
@@ -554,7 +633,7 @@ async function ShortContestBanner() {
   return (
     <Link
       href="/bajitos"
-      className="group relative isolate flex min-h-16 w-full items-center overflow-hidden rounded-xl border border-fuchsia-300/40 bg-zinc-950 px-4 py-3 outline-none transition-all duration-300 hover:border-fuchsia-200 hover:shadow-[0_0_16px_rgba(232,121,249,0.25)] focus-visible:ring-2 focus-visible:ring-fuchsia-300 sm:min-h-20 sm:px-5"
+      className="group relative isolate flex min-h-16 w-full items-center overflow-hidden rounded-md border border-fuchsia-300/40 bg-zinc-950 px-4 py-3 outline-none transition-all duration-300 hover:border-fuchsia-200 hover:shadow-[0_0_16px_rgba(232,121,249,0.25)] focus-visible:ring-2 focus-visible:ring-fuchsia-300 sm:min-h-20 sm:px-5"
       aria-label="Ver resultados del concurso de bajitos"
     >
       <div
@@ -577,7 +656,7 @@ async function ShortContestBanner() {
             Ver resultados
           </h2>
         </div>
-        <span className="rounded-lg border border-fuchsia-200/40 bg-fuchsia-300/15 px-3 py-1.5 text-[11px] font-black uppercase tracking-wide text-fuchsia-50">
+        <span className="rounded-md border border-fuchsia-200/40 bg-fuchsia-300/15 px-3 py-1.5 text-[11px] font-black uppercase tracking-wide text-fuchsia-50">
           Clasificación
         </span>
       </div>
@@ -599,7 +678,7 @@ async function MarketRocketOpeningBanner() {
     <Link
       href="/mercado"
       aria-label="El Mercado Rocket abre sus puertas"
-      className="group relative isolate flex min-h-56 w-full items-center justify-center overflow-hidden rounded-[3px] border border-rose-400/50 bg-zinc-950 px-4 py-10 outline-none transition-all duration-300 hover:border-rose-200 hover:shadow-[0_0_40px_rgba(244,63,94,0.45)] focus-visible:ring-2 focus-visible:ring-rose-300 sm:min-h-72 sm:px-8 sm:py-14"
+      className="group relative isolate flex min-h-56 w-full items-center justify-center overflow-hidden rounded-md border border-rose-400/50 bg-zinc-950 px-4 py-10 outline-none transition-all duration-300 hover:border-rose-200 hover:shadow-[0_0_40px_rgba(244,63,94,0.45)] focus-visible:ring-2 focus-visible:ring-rose-300 sm:min-h-72 sm:px-8 sm:py-14"
     >
       <div
         aria-hidden="true"
@@ -642,6 +721,8 @@ export default function Home() {
         </h1>
         <p className="text-sm text-zinc-400">Centro informativo de la partida.</p>
       </section>
+
+      <WeekTwoEventsBanner />
 
       <Suspense fallback={null}>
         <MarketRocketOpeningBanner />

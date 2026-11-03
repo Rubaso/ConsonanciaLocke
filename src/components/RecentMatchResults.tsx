@@ -4,7 +4,7 @@ export default function RecentMatchResults({ results }: { results: RecentMatchRe
   return (
     <section
       aria-label="Resultados recientes"
-      className="space-y-2 rounded-xl border border-amber-300/35 bg-amber-950/30 p-3"
+      className="space-y-2 rounded-md border border-amber-300/35 bg-amber-950/30 p-3"
     >
       <p className="text-[10px] font-bold uppercase tracking-widest text-amber-200">
         Resultados
@@ -17,7 +17,7 @@ export default function RecentMatchResults({ results }: { results: RecentMatchRe
         <ul className="space-y-2">
           {results.map((result) => (
             <li
-              className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-amber-300/15 bg-zinc-950/50 px-3 py-2"
+              className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-amber-300/15 bg-zinc-950/50 px-3 py-2"
               key={`${result.kind}-${result.id}`}
             >
               <p className="min-w-0 text-sm leading-5 text-zinc-100">

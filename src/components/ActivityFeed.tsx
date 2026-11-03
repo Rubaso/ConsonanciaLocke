@@ -457,7 +457,7 @@ export default function ActivityFeed({
               </div>
             ) : (
               <button
-                className="rounded-lg border border-zinc-700 px-3 py-2 text-xs font-semibold text-zinc-300 transition hover:border-cyan-300/40 hover:text-cyan-100"
+                className="rounded-md border border-zinc-700 px-3 py-2 text-xs font-semibold text-zinc-300 transition hover:border-cyan-300/40 hover:text-cyan-100"
                 onClick={() => void loadMore()}
                 type="button"
               >
@@ -491,7 +491,7 @@ function ActivityFilters({
         Filtrar actividad por tipo
       </label>
       <select
-        className="min-w-36 rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-xs text-zinc-200 outline-none focus:border-cyan-300/50"
+        className="min-w-36 rounded-md border border-zinc-700 bg-zinc-900 px-3 py-2 text-xs text-zinc-200 outline-none focus:border-cyan-300/50"
         disabled={loading}
         id="activity-type-filter"
         onChange={(event) => {

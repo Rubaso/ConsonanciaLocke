@@ -43,7 +43,7 @@ export default function PlayerPokepasteProfile({ initialUrl }: { initialUrl: str
   }
 
   return (
-    <section className="space-y-3 rounded-xl border border-violet-300/20 bg-slate-950/75 p-4">
+    <section className="space-y-3 rounded-md border border-violet-300/20 bg-slate-950/75 p-4">
       <div>
         <h2 className="text-sm font-bold text-zinc-100">Tu Poképaste</h2>
         <p className="mt-1 text-xs leading-5 text-zinc-500">
@@ -65,7 +65,7 @@ export default function PlayerPokepasteProfile({ initialUrl }: { initialUrl: str
         </label>
         <input
           autoComplete="url"
-          className="w-full rounded-lg border border-zinc-700 bg-zinc-900/80 px-3 py-2.5 text-sm text-white outline-none placeholder:text-zinc-600 focus:border-violet-300/50"
+          className="w-full rounded-md border border-zinc-700 bg-zinc-900/80 px-3 py-2.5 text-sm text-white outline-none placeholder:text-zinc-600 focus:border-violet-300/50"
           id="player-pokepaste-profile"
           maxLength={120}
           onChange={(event) => setUrl(event.target.value)}
@@ -87,7 +87,7 @@ export default function PlayerPokepasteProfile({ initialUrl }: { initialUrl: str
           <div className="ml-auto flex gap-2">
             {savedUrl && (
               <button
-                className="rounded-lg border border-zinc-700 px-3 py-2 text-xs font-semibold text-zinc-400 transition hover:text-white disabled:opacity-50"
+                className="rounded-md border border-zinc-700 px-3 py-2 text-xs font-semibold text-zinc-400 transition hover:text-white disabled:opacity-50"
                 disabled={saving}
                 onClick={() => void save("")}
                 type="button"
@@ -96,7 +96,7 @@ export default function PlayerPokepasteProfile({ initialUrl }: { initialUrl: str
               </button>
             )}
             <button
-              className="rounded-lg border border-violet-300/35 bg-violet-400/15 px-3 py-2 text-xs font-bold text-violet-100 transition hover:bg-violet-400/25 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-md border border-violet-300/35 bg-violet-400/15 px-3 py-2 text-xs font-bold text-violet-100 transition hover:bg-violet-400/25 disabled:cursor-not-allowed disabled:opacity-50"
               disabled={saving}
               type="submit"
             >
@@ -106,12 +106,12 @@ export default function PlayerPokepasteProfile({ initialUrl }: { initialUrl: str
         </div>
       </form>
       {error && (
-        <p className="rounded-lg border border-rose-400/25 bg-rose-950/30 px-3 py-2 text-xs text-rose-200" role="alert">
+        <p className="rounded-md border border-rose-400/25 bg-rose-950/30 px-3 py-2 text-xs text-rose-200" role="alert">
           {error}
         </p>
       )}
       {notice && (
-        <p className="rounded-lg border border-teal-400/25 bg-teal-950/30 px-3 py-2 text-xs text-teal-200" role="status">
+        <p className="rounded-md border border-teal-400/25 bg-teal-950/30 px-3 py-2 text-xs text-teal-200" role="status">
           {notice}
         </p>
       )}

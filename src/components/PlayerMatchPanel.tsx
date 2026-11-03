@@ -145,7 +145,7 @@ export default function PlayerMatchPanel({
   return (
     <section
       aria-labelledby="match-panel-heading"
-      className="match-pending-banner overflow-hidden rounded-2xl border-2 border-cyan-300/55 bg-slate-950/80"
+      className="match-pending-banner overflow-hidden rounded-md border-2 border-cyan-300/55 bg-slate-950/80"
     >
       <header className="border-b border-cyan-300/15 bg-cyan-950/30 px-5 py-5 sm:px-6 sm:py-6">
         <p className="text-xs font-bold uppercase tracking-[0.22em] text-cyan-300">
@@ -176,7 +176,7 @@ export default function PlayerMatchPanel({
           {opponentPaste ? (
             <div className="flex flex-wrap gap-2">
               <button
-                className="rounded-lg border border-sky-300/30 bg-sky-400/10 px-3 py-2 text-xs font-bold text-sky-100 transition hover:bg-sky-400/20 disabled:opacity-50"
+                className="rounded-md border border-sky-300/30 bg-sky-400/10 px-3 py-2 text-xs font-bold text-sky-100 transition hover:bg-sky-400/20 disabled:opacity-50"
                 disabled={copying}
                 onClick={copyOpponentPaste}
                 type="button"
@@ -184,7 +184,7 @@ export default function PlayerMatchPanel({
                 {copying ? "Copiando…" : "Copiar Poképaste rival"}
               </button>
               <a
-                className="rounded-lg border border-zinc-700 px-3 py-2 text-xs font-semibold text-zinc-300 transition hover:border-zinc-500 hover:text-white"
+                className="rounded-md border border-zinc-700 px-3 py-2 text-xs font-semibold text-zinc-300 transition hover:border-zinc-500 hover:text-white"
                 href={opponentPaste.content}
                 rel="noreferrer"
                 target="_blank"
@@ -212,7 +212,7 @@ export default function PlayerMatchPanel({
             </p>
             {opponentPaste && ownPaste ? (
               <a
-                className="inline-flex rounded-lg border border-teal-300/25 px-3 py-2 text-xs font-semibold text-teal-100 hover:bg-teal-300/10"
+                className="inline-flex rounded-md border border-teal-300/25 px-3 py-2 text-xs font-semibold text-teal-100 hover:bg-teal-300/10"
                 href={ownPaste.content}
                 rel="noreferrer"
                 target="_blank"
@@ -251,7 +251,7 @@ export default function PlayerMatchPanel({
             </div>
             <input
               autoComplete="url"
-              className="w-full rounded-lg border border-zinc-700 bg-zinc-900/80 px-3 py-2.5 text-sm text-white outline-none placeholder:text-zinc-600 focus:border-cyan-300/50"
+              className="w-full rounded-md border border-zinc-700 bg-zinc-900/80 px-3 py-2.5 text-sm text-white outline-none placeholder:text-zinc-600 focus:border-cyan-300/50"
               id="match-pokepaste"
               maxLength={120}
               onChange={(event) => setContent(event.target.value)}
@@ -269,7 +269,7 @@ export default function PlayerMatchPanel({
               <div className="flex gap-2">
                 {(ownPaste || ownPasteSubmitted) && !pasteLocked && (
                   <button
-                    className="rounded-lg border border-zinc-700 px-3 py-2 text-xs font-semibold text-zinc-400 transition hover:text-white disabled:opacity-50"
+                    className="rounded-md border border-zinc-700 px-3 py-2 text-xs font-semibold text-zinc-400 transition hover:text-white disabled:opacity-50"
                     disabled={saving}
                     onClick={() => void savePaste("")}
                     type="button"
@@ -278,7 +278,7 @@ export default function PlayerMatchPanel({
                   </button>
                 )}
                 <button
-                  className="rounded-lg border border-cyan-300/35 bg-cyan-400/15 px-3 py-2 text-xs font-bold text-cyan-100 transition hover:bg-cyan-400/25 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="rounded-md border border-cyan-300/35 bg-cyan-400/15 px-3 py-2 text-xs font-bold text-cyan-100 transition hover:bg-cyan-400/25 disabled:cursor-not-allowed disabled:opacity-50"
                   disabled={saving}
                   type="submit"
                 >
@@ -305,7 +305,7 @@ export default function PlayerMatchPanel({
               {index === BO3_SLOT_COUNT - 1 ? " (si hace falta)" : ""}
               <input
                 autoComplete="url"
-                className="w-full rounded-lg border border-zinc-700 bg-zinc-900/80 px-3 py-2.5 text-sm text-white outline-none placeholder:text-zinc-600 focus:border-cyan-300/50"
+                className="w-full rounded-md border border-zinc-700 bg-zinc-900/80 px-3 py-2.5 text-sm text-white outline-none placeholder:text-zinc-600 focus:border-cyan-300/50"
                 maxLength={400}
                 onChange={(event) => {
                   const next = [...replayUrls] as [string, string, string];
@@ -323,7 +323,7 @@ export default function PlayerMatchPanel({
               Pega los enlaces de cada combate. Quedarán en el historial.
             </p>
             <button
-              className="rounded-lg border border-cyan-300/35 bg-cyan-400/15 px-3 py-2 text-xs font-bold text-cyan-100 transition hover:bg-cyan-400/25 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-md border border-cyan-300/35 bg-cyan-400/15 px-3 py-2 text-xs font-bold text-cyan-100 transition hover:bg-cyan-400/25 disabled:cursor-not-allowed disabled:opacity-50"
               disabled={savingReplay}
               type="submit"
             >
@@ -354,7 +354,7 @@ export default function PlayerMatchPanel({
         )}
         {error && (
           <p
-            className="rounded-lg border border-rose-400/25 bg-rose-950/30 px-3 py-2 text-xs text-rose-200"
+            className="rounded-md border border-rose-400/25 bg-rose-950/30 px-3 py-2 text-xs text-rose-200"
             role="alert"
           >
             {error}
@@ -362,7 +362,7 @@ export default function PlayerMatchPanel({
         )}
         {notice && (
           <p
-            className="rounded-lg border border-teal-400/25 bg-teal-950/30 px-3 py-2 text-xs text-teal-200"
+            className="rounded-md border border-teal-400/25 bg-teal-950/30 px-3 py-2 text-xs text-teal-200"
             role="status"
           >
             {notice}

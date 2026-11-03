@@ -38,7 +38,7 @@ export default function PendingMarketOffers({ offers }: { offers: MarketPendingO
 
   return (
     <aside
-      className="rounded-[3px] border border-fuchsia-300/40 bg-fuchsia-950/40 p-4 shadow-lg shadow-fuchsia-950/20"
+      className="rounded-md border border-fuchsia-300/40 bg-fuchsia-950/40 p-4 shadow-lg shadow-fuchsia-950/20"
       role="status"
     >
       <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-fuchsia-300">
@@ -53,7 +53,7 @@ export default function PendingMarketOffers({ offers }: { offers: MarketPendingO
         {offers.map((offer) => (
           <li
             key={offer.id}
-            className="flex flex-wrap items-center gap-3 rounded-[3px] border border-white/10 bg-black/40 px-3 py-3"
+            className="flex flex-wrap items-center gap-3 rounded-md border border-white/10 bg-black/40 px-3 py-3"
           >
             {offer.pokemon ? (
               <PokemonSprite
@@ -79,7 +79,7 @@ export default function PendingMarketOffers({ offers }: { offers: MarketPendingO
                 type="button"
                 disabled={busyId !== null}
                 onClick={() => void respond(offer.id, "accept")}
-                className="rounded-[3px] bg-fuchsia-300 px-3 py-1.5 text-xs font-black uppercase text-slate-950 disabled:opacity-50"
+                className="rounded-md bg-fuchsia-300 px-3 py-1.5 text-xs font-black uppercase text-slate-950 disabled:opacity-50"
               >
                 {busyId === offer.id ? "…" : "Aceptar"}
               </button>
@@ -87,7 +87,7 @@ export default function PendingMarketOffers({ offers }: { offers: MarketPendingO
                 type="button"
                 disabled={busyId !== null}
                 onClick={() => void respond(offer.id, "reject")}
-                className="rounded-[3px] border border-white/20 px-3 py-1.5 text-xs font-bold uppercase text-zinc-200 hover:bg-white/10 disabled:opacity-50"
+                className="rounded-md border border-white/20 px-3 py-1.5 text-xs font-bold uppercase text-zinc-200 hover:bg-white/10 disabled:opacity-50"
               >
                 Rechazar
               </button>

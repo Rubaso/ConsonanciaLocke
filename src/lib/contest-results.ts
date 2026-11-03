@@ -1,4 +1,4 @@
-export const CONTEST_RESULTS_BANNER_MS = 7 * 24 * 60 * 60 * 1000;
+export const CONTEST_RESULTS_BANNER_MS = 4 * 24 * 60 * 60 * 1000;
 
 export function isContestResultsBannerVisible(endedAt: string | null) {
   if (!endedAt) return false;

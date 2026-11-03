@@ -38,6 +38,22 @@ Apply these files in order to the **new Consonancia project**:
 29. `20261027012200_tencachy_trainer_sprite.sql`
 30. `20261027012500_repair_save_import_and_challenge_mode.sql`
 31. `20261027013000_sync_pokemon_save_presence.sql`
+32. `20261028020000_fishing_contests.sql`
+33. `20261028030000_short_contests.sql`
+34. `20261029160000_match_showdown_replay.sql`
+35. `20261029170000_showdown_replay_psim.sql`
+36. `20261029180000_showdown_replay_any_url.sql`
+37. `20261029220000_match_bo3_replays.sql`
+38. `20261030150000_revive_false_dead_pokemon.sql`
+39. `20261030170000_mercado_rocket.sql`
+40. `20261030180000_player_bag_items.sql`
+41. `20261030200000_restore_status_changed_activity.sql`
+42. `20261030210000_exclude_bag_tms.sql`
+43. `20261030220000_market_offers.sql`
+44. `20261030230000_import_save_bag_compat.sql`
+45. `20261103180000_week_two_event_submissions.sql`
+46. `20261103190000_archaeologist_event_participation.sql`
+47. `20261103191000_week_two_event_manual_closure.sql`
 
 The initial migration creates 13 tables for player accounts and sessions,
 login throttling, the save-derived route catalog, Pokémon and moves, five
@@ -143,6 +159,17 @@ the obsolete game-mode column, and ensures the manual challenge labels exist.
 The thirty-first migration synchronizes the Pokémon visible in player boxes,
 teams, and route captures with each imported save. Missing Pokémon and their
 activity events remain in the database, but are hidden from current views.
+The thirty-second through forty-fourth migrations add the fishing and shortest
+Pokémon contests, match replay links, revive support, Mercado Rocket, imported
+bag items, activity compatibility, and offer workflows. The forty-fifth migration stores private Week 2 event entries with one
+submission per player. Players can read and edit only their own entry;
+organizers can review all entries on the event's private organizer view. The
+table has no direct `anon` or `authenticated` access; server handlers enforce
+session ownership. The forty-sixth migration adds Arqueólogo novato entries
+that reference the participant's Pokémon from Gruta Sisma. The server verifies
+ownership, capture route, and current save presence before accepting a
+selection. The forty-seventh migration adds organizer-controlled manual event
+closure and prevents entries from being created or edited after closure.
 
 ## Security
 
