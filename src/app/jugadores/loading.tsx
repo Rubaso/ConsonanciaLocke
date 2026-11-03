@@ -4,27 +4,39 @@ function PlayerCardSkeleton() {
       aria-hidden="true"
       className="overflow-hidden rounded-xl border border-zinc-800 border-l-4 border-l-cyan-300/20 bg-slate-950/75"
     >
-      <div className="flex items-center gap-3 border-b border-zinc-800 px-4 py-3">
-        <span className="h-10 w-10 rounded-full bg-zinc-800" />
-        <div className="flex-1 space-y-2">
-          <div className="h-4 w-28 rounded bg-zinc-800" />
-          <div className="h-3 w-20 rounded bg-zinc-900" />
-        </div>
-      </div>
       <div className="grid gap-5 p-4 md:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
-        <div className="space-y-3">
-          <div className="h-3 w-20 rounded bg-zinc-800" />
-          <div className="flex gap-2">
-            {Array.from({ length: 5 }, (_, index) => (
-              <span key={index} className="h-10 w-10 rounded-full bg-zinc-900" />
-            ))}
+        <div className="space-y-5">
+          <div className="flex items-center gap-3">
+            <span className="h-16 w-14 shrink-0 rounded-lg bg-zinc-800/80" />
+            <div className="min-w-0 flex-1 space-y-2">
+              <div className="flex items-center gap-2">
+                <div className="h-4 w-28 rounded bg-zinc-800" />
+                <div className="h-5 w-20 rounded-sm bg-red-950/50" />
+              </div>
+              <div className="h-3 w-20 rounded bg-zinc-900" />
+              <div className="h-5 w-24 rounded-full bg-rose-950/40" />
+            </div>
+          </div>
+          <div className="space-y-3">
+            <div className="h-3 w-20 rounded bg-zinc-800" />
+            <div className="flex gap-2">
+              {Array.from({ length: 5 }, (_, index) => (
+                <span key={index} className="h-10 w-10 rounded-full bg-zinc-900" />
+              ))}
+            </div>
           </div>
         </div>
-        <div className="space-y-3">
-          <div className="h-3 w-16 rounded bg-zinc-800" />
-          <div className="grid grid-cols-3 gap-2">
+        <div>
+          <div className="mb-3 flex items-center justify-between">
+            <div className="h-3 w-16 rounded bg-zinc-800" />
+            <div className="h-3 w-8 rounded bg-zinc-900" />
+          </div>
+          <div className="mt-3 grid grid-cols-3 gap-2">
             {Array.from({ length: 6 }, (_, index) => (
-              <span key={index} className="aspect-square rounded-lg bg-zinc-900" />
+              <span
+                key={index}
+                className="aspect-square rounded-lg border border-zinc-800 bg-zinc-950/70"
+              />
             ))}
           </div>
         </div>

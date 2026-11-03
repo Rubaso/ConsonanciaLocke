@@ -59,93 +59,95 @@ function PlayerCard({
         }`}
         style={{ borderLeftColor: accentColor }}
       >
-        <header className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-800 px-4 py-3">
-          <div className="flex min-w-0 items-center gap-3">
-            {player.trainerSprite ? (
-              <span className="flex h-16 w-14 shrink-0 items-center justify-center" aria-hidden="true">
-                <TrainerSpriteAvatar name={player.trainerSprite} size={64} />
-              </span>
-            ) : (
-              <span
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border bg-zinc-800 text-sm font-black text-white"
-                style={{ borderColor: accentColor }}
-                aria-hidden="true"
-              >
-                {(player.gameTrainerName || player.displayName)
-                  .slice(0, 1)
-                  .toUpperCase()}
-              </span>
-            )}
-            <div className="min-w-0">
-              <div className="flex min-w-0 items-center gap-2">
-                <h3
-                  className="truncate font-semibold"
-                  style={{ color: player.color }}
-                >
-                  {player.gameTrainerName || player.displayName}
-                </h3>
-                <span
-                  className={`inline-flex shrink-0 rounded-sm border px-2.5 py-1 text-[10px] font-black uppercase tracking-wide ${
-                    player.challengeMode === "BELLELOKE"
-                      ? "border-violet-300/30 bg-violet-400/10 text-violet-200"
-                      : "border-red-300/30 bg-red-400/10 text-red-200"
-                  }`}
-                >
-                  {player.challengeMode}
+        <div className="grid gap-5 p-4 md:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
+          <div className="space-y-5">
+            <header className="flex flex-wrap items-center gap-3">
+              <div className="flex min-w-0 items-center gap-3">
+                {player.trainerSprite ? (
+                  <span className="flex h-16 w-14 shrink-0 items-center justify-center" aria-hidden="true">
+                    <TrainerSpriteAvatar name={player.trainerSprite} size={64} />
+                  </span>
+                ) : (
+                  <span
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border bg-zinc-800 text-sm font-black text-white"
+                    style={{ borderColor: accentColor }}
+                    aria-hidden="true"
+                  >
+                    {(player.gameTrainerName || player.displayName)
+                      .slice(0, 1)
+                      .toUpperCase()}
+                  </span>
+                )}
+                <div className="min-w-0">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <h3
+                      className="truncate font-semibold"
+                      style={{ color: player.color }}
+                    >
+                      {player.gameTrainerName || player.displayName}
+                    </h3>
+                    <span
+                      className={`inline-flex shrink-0 rounded-sm border px-2.5 py-1 text-[10px] font-black uppercase tracking-wide ${
+                        player.challengeMode === "BELLELOKE"
+                          ? "border-violet-300/30 bg-violet-400/10 text-violet-200"
+                          : "border-red-300/30 bg-red-400/10 text-red-200"
+                      }`}
+                    >
+                      {player.challengeMode}
+                    </span>
+                  </div>
+                  <p className="truncate text-xs text-zinc-500">@{player.username}</p>
+                  <div className="mt-1 flex flex-wrap items-center gap-2">
+                    {player.isLive && (
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-rose-400/40 bg-rose-500/15 px-2 py-1 text-[10px] font-black uppercase tracking-wide text-rose-200 shadow-[0_0_14px_rgba(244,63,94,0.18)]">
+                        <span aria-hidden="true" className="h-1.5 w-1.5 animate-pulse rounded-full bg-rose-400 shadow-[0_0_6px_rgba(251,113,133,0.9)]" />
+                        En directo
+                      </span>
+                    )}
+                    <span className="text-[10px] font-semibold text-cyan-300 opacity-0 transition group-hover:opacity-100">
+                      Ver caja →
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </header>
+
+            <section aria-label={`Medallas de ${player.gameTrainerName || player.displayName}`}>
+              <div className="mb-3 flex items-center justify-between">
+                <h4 className="text-xs font-bold uppercase tracking-wide text-zinc-400">
+                  Medallas
+                </h4>
+                <span className="text-xs text-zinc-500">
+                  {player.medals.filter((medal) => medal.earned).length} /{" "}
+                  {player.medals.length}
                 </span>
               </div>
-              <p className="truncate text-xs text-zinc-500">@{player.username}</p>
-            </div>
+              <div className="flex flex-wrap gap-2">
+                {player.medals.map((medal) => (
+                  <span
+                    key={medal.id}
+                    title={medal.name}
+                    aria-label={`${medal.name}: ${medal.earned ? "obtenida" : "pendiente"}`}
+                    className={`medal-slot flex h-10 w-10 items-center justify-center rounded-full border ${
+                      medal.earned
+                        ? "medal-slot-earned border-amber-300/40 bg-amber-400/15"
+                        : "border-zinc-700 bg-zinc-950"
+                    }`}
+                  >
+                    <Image
+                      src={`/medals/medal-clean-${medal.id}.png`}
+                      alt=""
+                      width={40}
+                      height={40}
+                      aria-hidden="true"
+                      className={medal.earned ? "relative z-10" : ""}
+                      style={medal.earned ? undefined : { filter: "brightness(0)" }}
+                    />
+                  </span>
+                ))}
+              </div>
+            </section>
           </div>
-          <div className="flex items-center gap-3">
-            {player.isLive && (
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-rose-400/30 bg-rose-950/35 px-2 py-1 text-[10px] font-black uppercase tracking-wide text-rose-200">
-                <span aria-hidden="true" className="h-1.5 w-1.5 animate-pulse rounded-full bg-rose-400" />
-                En directo
-              </span>
-            )}
-            <span className="hidden text-xs font-semibold text-cyan-300 opacity-0 transition group-hover:opacity-100 sm:inline">
-              Ver caja →
-            </span>
-          </div>
-        </header>
-
-        <div className="grid gap-5 p-4 md:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
-          <section aria-label={`Medallas de ${player.gameTrainerName || player.displayName}`}>
-            <div className="mb-3 flex items-center justify-between">
-              <h4 className="text-xs font-bold uppercase tracking-wide text-zinc-400">
-                Medallas
-              </h4>
-              <span className="text-xs text-zinc-500">
-                {player.medals.filter((medal) => medal.earned).length} /{" "}
-                {player.medals.length}
-              </span>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {player.medals.map((medal) => (
-                <span
-                  key={medal.id}
-                  title={medal.name}
-                  aria-label={`${medal.name}: ${medal.earned ? "obtenida" : "pendiente"}`}
-                  className={`medal-slot flex h-10 w-10 items-center justify-center rounded-full border ${
-                    medal.earned
-                      ? "medal-slot-earned border-amber-300/40 bg-amber-400/15"
-                      : "border-zinc-700 bg-zinc-950"
-                  }`}
-                >
-                  <Image
-                    src={`/medals/medal-clean-${medal.id}.png`}
-                    alt=""
-                    width={40}
-                    height={40}
-                    aria-hidden="true"
-                    className={medal.earned ? "relative z-10" : ""}
-                    style={medal.earned ? undefined : { filter: "brightness(0)" }}
-                  />
-                </span>
-              ))}
-            </div>
-          </section>
 
           <section aria-label={`Equipo de ${player.gameTrainerName || player.displayName}`}>
             <div className="mb-3 flex items-center justify-between">
