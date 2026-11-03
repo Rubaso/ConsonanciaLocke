@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import PokemonSprite from "@/components/PokemonSprite";
+import { formatPokemonSpeciesName } from "@/lib/pokemon-name";
 import type {
   ShortContestStanding,
   ShortEligiblePokemon,
@@ -109,10 +110,10 @@ export default function ShortContestPicker({
                 />
                 <span className="min-w-0">
                   <span className="block text-sm font-bold text-zinc-100">
-                    {pokemon.nickname || pokemon.species}
+                    {pokemon.nickname || formatPokemonSpeciesName(pokemon.species)}
                   </span>
                   <span className="mt-0.5 block text-xs text-zinc-500">
-                    {pokemon.species}
+                    {formatPokemonSpeciesName(pokemon.species)}
                     {pokemon.level ? ` · Nv. ${pokemon.level}` : ""}
                     {pokemon.teamPosition ? " · Equipo" : " · Caja"}
                   </span>

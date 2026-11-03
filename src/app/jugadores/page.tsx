@@ -3,10 +3,12 @@ import Image from "next/image";
 import { connection } from "next/server";
 import PlayerFilter from "@/components/PlayerFilter";
 import PokemonSprite from "@/components/PokemonSprite";
+import ShinyIcon from "@/components/ShinyIcon";
 import TrainerSpriteAvatar from "@/components/TrainerSpriteAvatar";
 import { getCurrentPlayer } from "@/lib/auth";
 import { getSupabaseConfiguration } from "@/lib/supabase/admin";
 import { matchesPlayerSearch } from "@/lib/player-search";
+import { formatPokemonSpeciesName } from "@/lib/pokemon-name";
 import type { PlayerCardData } from "@/lib/supabase/player-data";
 import { playerBoxPath } from "@/lib/player-box-path";
 import { getPlayersPageData } from "@/lib/supabase/player-data";
@@ -168,7 +170,7 @@ function PlayerCard({
                     key={position}
                     aria-label={
                       pokemon
-                        ? `Posición ${position}: ${pokemon.nickname || pokemon.species}`
+                        ? `Posición ${position}: ${pokemon.nickname || formatPokemonSpeciesName(pokemon.species)}`
                         : `Posición ${position} vacía`
                     }
                     title={
@@ -179,24 +181,29 @@ function PlayerCard({
                   >
                     {pokemon ? (
                       <>
-                        <PokemonSprite
-                          species={pokemon.species}
-                          form={pokemon.form}
-                          isShiny={pokemon.isShiny}
-                          size={112}
-                          framed={false}
-                        />
+                        <span className="relative inline-flex">
+                          <PokemonSprite
+                            species={pokemon.species}
+                            form={pokemon.form}
+                            isShiny={pokemon.isShiny}
+                            size={112}
+                            framed={false}
+                          />
+                          {pokemon.isShiny && (
+                            <span
+                              className="absolute right-1 top-1 text-amber-300 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]"
+                              title="Variocolor"
+                            >
+                              <ShinyIcon />
+                            </span>
+                          )}
+                        </span>
                         <span className="max-w-full truncate text-[10px] font-semibold text-zinc-200">
-                          {pokemon.nickname || pokemon.species}
+                          {pokemon.nickname || formatPokemonSpeciesName(pokemon.species)}
                         </span>
                         {pokemon.nickname && (
                           <span className="max-w-full truncate text-[9px] text-zinc-500">
-                            {pokemon.species}
-                          </span>
-                        )}
-                        {pokemon.isShiny && (
-                          <span className="text-[9px] text-amber-300" aria-label="Shiny">
-                            ✦
+                            {formatPokemonSpeciesName(pokemon.species)}
                           </span>
                         )}
                       </>

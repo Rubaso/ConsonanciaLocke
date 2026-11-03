@@ -4,6 +4,7 @@ import {
   createSupabaseAdminClient,
   getSupabaseConfiguration,
 } from "@/lib/supabase/admin";
+import { formatPokemonSpeciesName } from "@/lib/pokemon-name";
 
 export type ActivityEvent = {
   id: string;
@@ -106,7 +107,7 @@ function parseActivityEvents(value: unknown): ActivityEvent[] {
       occurredAt: item.occurred_at,
       playerName: item.players.display_name,
       playerColor: item.players.color,
-      pokemonName: nickname || species,
+      pokemonName: nickname || (species ? formatPokemonSpeciesName(species) : null),
       species,
       form,
       isShiny,

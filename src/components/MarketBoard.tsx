@@ -4,6 +4,7 @@ import { useMemo, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import MarketItemIcon from "@/components/MarketItemIcon";
 import PokemonSprite from "@/components/PokemonSprite";
+import { formatPokemonSpeciesName } from "@/lib/pokemon-name";
 import {
   displayMarketItemName,
   listingHeadline,
@@ -333,7 +334,7 @@ export default function MarketBoard({
                     <option value="">Elige un Pokémon vivo</option>
                     {ownedPokemon.map((poke) => (
                       <option key={poke.id} value={poke.id} disabled={poke.listed}>
-                        {poke.nickname || poke.species} · Nv. {poke.level}
+                        {poke.nickname || formatPokemonSpeciesName(poke.species)} · Nv. {poke.level}
                         {poke.listed ? " (ya publicado)" : ""}
                       </option>
                     ))}
@@ -679,7 +680,7 @@ function TradeOfferDialog({
                         framed={false}
                       />
                       <span className="w-full truncate text-[10px] text-zinc-200">
-                        {pokemon.nickname || pokemon.species}
+                        {pokemon.nickname || formatPokemonSpeciesName(pokemon.species)}
                       </span>
                     </button>
                   );

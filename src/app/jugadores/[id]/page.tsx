@@ -3,9 +3,11 @@ import { connection } from "next/server";
 import { notFound, redirect } from "next/navigation";
 import AbilityTooltip from "@/components/AbilityTooltip";
 import PokemonSprite from "@/components/PokemonSprite";
+import ShinyIcon from "@/components/ShinyIcon";
 import ReviveFallenButton from "@/components/ReviveFallenButton";
 import TrainerSpriteAvatar from "@/components/TrainerSpriteAvatar";
 import { getCurrentPlayer } from "@/lib/auth";
+import { formatPokemonSpeciesName } from "@/lib/pokemon-name";
 import {
   isPlayerBoxLookup,
   PLAYER_ID_PATTERN,
@@ -28,6 +30,7 @@ function PokemonCard({
   pokemon: PlayerBoxPokemon;
   canRevive?: boolean;
 }) {
+  const speciesName = formatPokemonSpeciesName(pokemon.species);
   return (
     <li
       className={`relative flex w-24 shrink-0 flex-col items-center rounded-lg border p-2 text-center ${
@@ -35,18 +38,9 @@ function PokemonCard({
           ? "border-rose-900/70 bg-rose-950/20"
           : "border-zinc-700 bg-slate-950/80"
       }`}
-      title={`${pokemon.nickname || pokemon.species}${pokemon.ability ? ` · HAB. ${pokemon.ability}` : ""}`}
+      title={`${pokemon.nickname || speciesName}${pokemon.ability ? ` · HAB. ${pokemon.ability}` : ""}`}
     >
-      {pokemon.isShiny && (
-        <span
-          className="absolute right-1.5 top-1 text-amber-300"
-          aria-label="Pokémon variocolor"
-          title="Variocolor"
-        >
-          ✦
-        </span>
-      )}
-      <div className="flex h-[76px] items-center justify-center">
+      <div className="relative flex h-[76px] items-center justify-center">
         <PokemonSprite
           species={pokemon.species}
           form={pokemon.form}
@@ -54,17 +48,25 @@ function PokemonCard({
           size={72}
           framed={false}
         />
+        {pokemon.isShiny && (
+          <span
+            className="absolute right-0 top-0 text-amber-300 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]"
+            title="Variocolor"
+          >
+            <ShinyIcon />
+          </span>
+        )}
       </div>
       <p className="w-full truncate text-[11px] font-semibold text-zinc-100">
-        {pokemon.species.toLowerCase()}
+        {speciesName}
       </p>
       <p className="w-full truncate text-[10px] text-zinc-400">
-        {pokemon.nickname || pokemon.species}
+        {pokemon.nickname || speciesName}
       </p>
       <AbilityTooltip ability={pokemon.ability} />
       {canRevive && pokemon.status === "dead" && (
         <ReviveFallenButton
-          label={pokemon.nickname || pokemon.species}
+          label={pokemon.nickname || speciesName}
           pokemonId={pokemon.id}
         />
       )}

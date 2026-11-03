@@ -8,6 +8,7 @@ import {
   resolveMarketSlug,
 } from "@/lib/market-items";
 import { ROUTE_CATALOG } from "@/lib/route-catalog";
+import { formatPokemonSpeciesName } from "@/lib/pokemon-name";
 
 export type ImportedPokemon = {
   source_identity: string;
@@ -487,7 +488,7 @@ function normalizePokemon(
   const personalId = valueText(getProperty(value, "personalID"));
   if (!rawSpecies || !personalId) return null;
 
-  const species = displayLabel(rawSpecies);
+  const species = formatPokemonSpeciesName(rawSpecies);
   if (!species) return null;
 
   const rawGender = numberValue(getProperty(value, "gender"));

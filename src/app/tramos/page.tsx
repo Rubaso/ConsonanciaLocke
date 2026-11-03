@@ -4,6 +4,7 @@ import PlayerFilter from "@/components/PlayerFilter";
 import PokemonSprite from "@/components/PokemonSprite";
 import { getCurrentPlayer } from "@/lib/auth";
 import { matchesPlayerSearch } from "@/lib/player-search";
+import { formatPokemonSpeciesName } from "@/lib/pokemon-name";
 import type { RouteCapture } from "@/lib/supabase/route-data";
 import { ROUTE_STAGES } from "@/lib/stage-catalog";
 import { getStagePageData } from "@/lib/supabase/route-data";
@@ -34,7 +35,8 @@ function PokemonRow({
   sourceLabel?: string;
 }) {
   const source = sourceLabel ?? pokemon.routeName;
-  const captureName = pokemon.nickname || pokemon.species;
+  const speciesName = formatPokemonSpeciesName(pokemon.species);
+  const captureName = pokemon.nickname || speciesName;
 
   return (
     <li
@@ -45,7 +47,7 @@ function PokemonRow({
             ? "border-zinc-700 bg-slate-950/80"
             : "border-violet-900/70 bg-violet-950/20"
       }`}
-      title={`${captureName}${pokemon.nickname ? ` (${pokemon.species})` : ""} · ${pokemon.playerName} · ${source}${pokemon.originMapId !== null ? ` · mapa ${pokemon.originMapId}` : ""} · ${statusLabel(pokemon.status)}`}
+      title={`${captureName}${pokemon.nickname ? ` (${speciesName})` : ""} · ${pokemon.playerName} · ${source}${pokemon.originMapId !== null ? ` · mapa ${pokemon.originMapId}` : ""} · ${statusLabel(pokemon.status)}`}
     >
       {pokemon.isShiny && (
         <span
@@ -66,7 +68,7 @@ function PokemonRow({
         />
       </div>
       <p className="w-full truncate text-[11px] font-semibold text-zinc-100">
-        {pokemon.species.toLowerCase()}
+        {speciesName}
       </p>
       <p className="w-full truncate text-[10px] text-zinc-400">
         {pokemon.nickname || pokemon.playerName}

@@ -1,3 +1,4 @@
+import { formatPokemonSpeciesName } from "@/lib/pokemon-name";
 import pokeapiItemNames from "@/lib/pokeapi-item-names.json";
 
 export type MarketItem = {
@@ -465,7 +466,10 @@ export function listingHeadline(listing: {
 }) {
   const offer =
     listing.kind === "pokemon_for_item"
-      ? listing.pokemon?.nickname?.trim() || listing.pokemon?.species || "Pokémon"
+      ? listing.pokemon?.nickname?.trim() ||
+        (listing.pokemon?.species
+          ? formatPokemonSpeciesName(listing.pokemon.species)
+          : "Pokémon")
       : resolveItemLabel(listing.offerItemSlug, listing.offerLabel);
   const want = resolveItemLabel(listing.wantItemSlug, listing.wantLabel);
 

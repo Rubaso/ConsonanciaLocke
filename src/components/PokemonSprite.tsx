@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { formatPokemonSpeciesName } from "@/lib/pokemon-name";
 
 type PokemonSpriteProps = {
   species: string;
@@ -25,7 +26,7 @@ const speciesRequests = new Map<
 >();
 
 function speciesSlug(species: string) {
-  return species
+  return formatPokemonSpeciesName(species)
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
