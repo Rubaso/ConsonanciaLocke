@@ -138,10 +138,10 @@ export default function TournamentHomePage() {
               </div>
             </Link>
           ))}
-          <div
-            aria-label="Evento misterioso"
-            className="group relative isolate flex min-h-64 flex-col justify-end overflow-hidden rounded-md border-2 border-transparent p-4 transition duration-300 hover:-translate-y-1 hover:border-red-400/80 hover:shadow-[0_0_34px_rgba(239,68,68,0.4)] focus-within:border-red-400/80"
-            role="group"
+          <Link
+            aria-label={`Ver reglamento de ${MYSTERY_EVENT_TEASER.name}`}
+            className="group relative isolate flex min-h-64 flex-col justify-end overflow-hidden rounded-md border-2 border-transparent p-4 transition duration-300 hover:-translate-y-1 hover:border-red-400/80 hover:shadow-[0_0_34px_rgba(239,68,68,0.4)] focus-visible:border-red-400/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-red-300"
+            href="/torneo/eventos/enigma-carmesi"
           >
             <div
               aria-hidden="true"
@@ -167,8 +167,11 @@ export default function TournamentHomePage() {
               <p className="mt-2 text-sm font-bold tracking-[0.18em] text-red-100">
                 {MYSTERY_EVENT_TEASER.summary}
               </p>
+              <p className="mt-3 text-xs font-bold uppercase tracking-widest text-red-200">
+                Ver reglamento →
+              </p>
             </div>
-          </div>
+          </Link>
         </div>
       </section>
 
