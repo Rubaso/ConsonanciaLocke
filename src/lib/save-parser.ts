@@ -468,7 +468,15 @@ function storageCurrentBoxIndex(storage: unknown, boxCount: number) {
   return null;
 }
 
-function isGraveBox(boxIndex: number, boxCount: number, currentBoxIndex: number | null) {
+function isGraveBox(
+  boxIndex: number,
+  boxCount: number,
+  currentBoxIndex: number | null,
+  boxName: string | null,
+) {
+  if (boxName && /\b(?:RIP|DEAD|GRAVE|MUERT[OA]S?|CA[IÍ]D[OA]S?)\b/i.test(boxName)) {
+    return true;
+  }
   if (boxCount < 3) return false;
   if (boxIndex < boxCount - 2) return false;
   if (currentBoxIndex !== null && boxIndex === currentBoxIndex) return false;
@@ -587,7 +595,13 @@ export function parseConsonanciaSave(data: Uint8Array): ParsedSave {
     for (const [boxIndex, box] of boxes.entries()) {
       const boxPokemon = getProperty(box, "pokemon");
       if (!Array.isArray(boxPokemon)) continue;
-      const isDeadBox = isGraveBox(boxIndex, boxes.length, currentBoxIndex);
+      const boxName = valueText(getProperty(box, "name"));
+      const isDeadBox = isGraveBox(
+        boxIndex,
+        boxes.length,
+        currentBoxIndex,
+        boxName,
+      );
       for (const pokemon of boxPokemon) {
         const imported = normalizePokemon(
           pokemon,
