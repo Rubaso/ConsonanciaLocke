@@ -24,20 +24,6 @@ const sections = [
     description: "Cuadro, participantes y avance del torneo.",
     tone: "amber",
   },
-  {
-    href: "/pesca",
-    eyebrow: "Concurso",
-    title: "Concurso de pesca",
-    description: "Clasificación por peso, clips y pesca activa de la partida.",
-    tone: "teal",
-  },
-  {
-    href: "/bajitos",
-    eyebrow: "Concurso",
-    title: "Concurso de bajitos",
-    description: "Clasificación por altura, clips y Pokémon más bajos de la partida.",
-    tone: "fuchsia",
-  },
 ] as const;
 
 const toneClass = {
@@ -98,6 +84,77 @@ export default function TournamentHomePage() {
           </Link>
         ))}
       </div>
+
+      <section className="space-y-3">
+        <header className="space-y-1">
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-teal-300">
+            Concursos
+          </p>
+          <h2 className="text-xl font-black text-white">
+            Semana 1 · Tramo 1
+          </h2>
+        </header>
+        <div className="grid gap-5 md:grid-cols-2">
+          <Link
+            aria-label="Ir al Concurso de pesca"
+            className="group relative isolate flex min-h-64 flex-col justify-end overflow-hidden rounded-md border-2 border-transparent p-4 transition duration-300 hover:-translate-y-1 hover:border-teal-200/80 hover:shadow-[0_0_30px_rgba(45,212,191,0.3)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-200"
+            href="/pesca"
+          >
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 z-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
+              style={{ backgroundImage: "url('/FondoPesca/ash-goh-pescando.png')" }}
+            />
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 z-0 bg-gradient-to-t from-zinc-950/95 via-zinc-950/55 to-zinc-950/10"
+            />
+            <div className="relative z-10">
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-teal-300">
+                Concurso
+              </p>
+              <h3 className="mt-2 text-xl font-black text-white">
+                Concurso de pesca
+              </h3>
+              <p className="mt-2 text-sm leading-5 text-zinc-100/90">
+                Clasificación por peso, clips y pesca activa de la partida.
+              </p>
+              <p className="mt-3 text-xs font-bold uppercase tracking-widest text-teal-100">
+                Ver concurso →
+              </p>
+            </div>
+          </Link>
+          <Link
+            aria-label="Ir al Concurso de bajitos"
+            className="group relative isolate flex min-h-64 flex-col justify-end overflow-hidden rounded-md border-2 border-transparent p-4 transition duration-300 hover:-translate-y-1 hover:border-fuchsia-200/80 hover:shadow-[0_0_30px_rgba(232,121,249,0.3)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-fuchsia-200"
+            href="/bajitos"
+          >
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 z-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
+              style={{ backgroundImage: "url('/FondoBajitos/flabebe-prado.png')" }}
+            />
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 z-0 bg-gradient-to-t from-zinc-950/95 via-zinc-950/55 to-zinc-950/10"
+            />
+            <div className="relative z-10">
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-fuchsia-300">
+                Concurso
+              </p>
+              <h3 className="mt-2 text-xl font-black text-white">
+                Concurso de bajitos
+              </h3>
+              <p className="mt-2 text-sm leading-5 text-zinc-100/90">
+                Clasificación por altura, clips y Pokémon más bajos de la partida.
+              </p>
+              <p className="mt-3 text-xs font-bold uppercase tracking-widest text-fuchsia-100">
+                Ver concurso →
+              </p>
+            </div>
+          </Link>
+        </div>
+      </section>
 
       <section className="space-y-3">
         <header className="space-y-1">
